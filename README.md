@@ -34,9 +34,9 @@ npm run dev
 
 ## Team
 
-Yannis De Saint Louberc
-Lilian Bulteau
-Arsène Léonard Barton -- von Saurma
+- Yannis De Saint Louberc
+- Lilian Bulteau
+- Arsène Léonard Barton -- von Saurma
 
 ## Useful Links
 
