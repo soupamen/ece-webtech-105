@@ -4,7 +4,7 @@ Welcome to our Web-Tech project repository.
 
 ## Overview
 
-We don't know for the moment what will be the subject of this project
+this project is a tool listing different open source alternative for each site or app researched.
 
 ## Technologies Used
 
@@ -34,7 +34,7 @@ npm run dev
 
 ## Team
 
-- Yannis De Saint Louberc
+- Yannis De Saint Loubert
 - Lilian Bulteau
 - Arsène Léonard Barton -- von Saurma
 
