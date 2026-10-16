@@ -4,7 +4,7 @@ Welcome to our Web-Tech project repository.
 
 ## Overview
 
-this project is a tool listing different open source alternative for each site or app researched.
+OpenFinder is a tool listing different open source alternative for each site or app researched.
 
 ## Technologies Used
 
