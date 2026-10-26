@@ -1,3 +1,6 @@
+// SSR: results depend on URL filters, rendered on every request
+export const dynamic = 'force-dynamic'
+
 export default function Page() {
   return (
     <>
