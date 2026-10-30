@@ -1,47 +1,61 @@
-#lab rendering
+# Rendering guide
 
-## audit
+This document records the rendering decision for every current route. It is
+deliberately based on the code in `app/`; update it whenever a route's data
+requirements change.
 
-| Page | Data source | Update | Personalized | SEO | Rendering 
-|---|---|---|---|---|---|
-| `/` | Database | Rare | No | Yes | ISR | 
-| `/about` | None | Never | No | Yes | SSG | 
-| `/category/[slug]` | Database | Rare | No | Yes | SSG params | 
-| `/tool/[slug]` | Database | Sometimes | No | Yes | ISR |
-| `/explore` | Database | Often | No | Base | SSR |
-| `/list` | User | Often | Yes | No | SSR |
-| `/list/[id]` | User | Sometimes | No | Yes | ISR |
-| `/profile` | User | Often | Yes | No | SSR |
-| `/admin` | Database | Often | Role | No | SSR |
-| `/login` | None | Never | No | No | SSG + CSR |
-| `/not-found` | None | Never | No | NO | SSG |
+## Quick reference
 
-## CSR components 
+| Route | Source file | Mode | Why |
+| --- | --- | --- | --- |
+| `/` | `app/page.js` | ISR, 3,600 seconds | Public landing content can be cached and refreshed hourly |
+| `/about` | `app/about/page.js` | Static | Content has no request-time data |
+| `/category` | `app/category/page.js` | Static | Category index is currently placeholder content |
+| `/category/[slug]` | `app/category/[slug]/page.js` | Static parameters | Known category pages are generated from `generateStaticParams` |
+| `/tool/[slug]` | `app/tool/[slug]/page.js` | ISR, 60 seconds | Public tool details are cacheable and may change |
+| `/explore` | `app/explore/page.js` | Dynamic | The future page will depend on request filters |
+| `/list` | `app/list/page.js` | Dynamic | Lists will contain user-specific data |
+| `/profile` | `app/profile/page.js` | Dynamic | Profiles will contain user-specific data |
+| `/not-found` | `app/not-found.js` | Static | The fallback has no request-time data |
 
-- Searchabar and filters (`/explore`): updates results while typing, no page reload.
-- Add to list (`/tool/[slug]`): depends on the logged-in user.
-- Like button (`/tool/[slug]`): instant click feedback, user-specific state.
-- LoginForm (`/login`): Supabase auth runs in the browser.
-- ListEditor (`/list`): user edits their own lists .
+## Decision rules
 
-A page stays SSG/ISR for SEO and speed. Only the small interactive or user-specific parts become CSR components.
+### Static rendering (SSG)
 
-## Strategy
+Use static rendering when the output is the same for every visitor and does not
+need request-time data. `dynamic = 'force-static'` makes that intent explicit on
+the about and category index pages.
 
-**SSG** (built once, never changes)
-- `/about`, `/not-found`: static content, no data.
-- `/category/[slug]`: categories rarely change, so build every page once with `generateStaticParams`.
-- `/login`: the page is static only the form is interactive (CSR).
+### Incremental Static Regeneration (ISR)
 
-**ISR** (static, refreshed after a delay)
-- `/`: needs SEO and speed, and the data changes slowly, so refresh every hour.
-- `/tool/[slug]`: SEO but tools change sometimes, so a short refresh (60 s).
-- `/list/[id]`: public and SEO refreshed on demand with when the owner edits it.
+Use ISR for public pages that benefit from caching but need periodic refreshes.
+`revalidate` is expressed in seconds:
 
-**SSR** (rendered on every request)
-- `/explore`: results depend on the filters in the URL so they can't be pre-built.
-- `/list`, `/profile`: personal data so they can't be cached or shared.
-- `/admin`: must always be fresh.
+```js
+export const revalidate = 3600
+```
 
-**CSR** (in the browser)
-- Search bar, likes, comments, add to list: interactive or user-specific, small client components inside static pages.
+The value is a product decision, not a default to copy blindly. Shorten it only
+when the page has a real freshness requirement.
+
+### Dynamic rendering (SSR)
+
+Use `dynamic = 'force-dynamic'` when a page depends on request-time state, such
+as URL filters or authenticated user data. Do not use it to bypass a data or
+cache bug without documenting the reason.
+
+### Client Components (CSR)
+
+Client rendering is limited to interactive UI. `components/layout/NavLinks.js`
+uses `'use client'` because it reads `usePathname()` to mark the active link.
+Keep the surrounding layout and pages as Server Components.
+
+## Adding or changing a route
+
+1. Decide whether the output is public and cacheable, request-dependent, or
+   interactive.
+2. Add the smallest explicit export that expresses that decision.
+3. Add or update the route in the table above.
+4. Run `npm run build` and inspect the route behavior locally.
+5. If the route becomes user-specific, review data access and security before
+   shipping it.
