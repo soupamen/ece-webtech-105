@@ -9,7 +9,6 @@ const links = [
   { href: '/category', label: 'Category' },
   { href: '/list', label: 'List' },
   { href: '/profile', label: 'Profile' },
-  { href: '/about', label: 'About' },
 ]
 
 export default function NavLinks() {
