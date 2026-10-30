@@ -27,21 +27,21 @@ export default function SearchBar() {
 
   return (
     <div
-      className={`flex items-center overflow-hidden rounded-full border transition-all duration-300 ${
+      className={`flex shrink-0 items-center overflow-hidden rounded-full border transition-[width,colors] duration-300 ${
         expanded
-          ? 'w-48 border-gray-400 bg-white sm:w-64 dark:border-gray-500 dark:bg-gray-900'
-          : 'w-10 border-transparent'
+          ? 'w-52 border-gray-400 bg-white sm:w-64 dark:border-gray-500 dark:bg-gray-900'
+          : 'w-20 border-gray-200 dark:border-gray-700'
       }`}
     >
       <button
         type="button"
-        onClick={() => setExpanded(true)}
+        onClick={() => setExpanded((isExpanded) => !isExpanded)}
         aria-label="Open search"
         aria-expanded={expanded}
-        className="flex h-9 w-10 shrink-0 items-center justify-center rounded-full text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+        className="flex h-9 w-20 shrink-0 items-center justify-center rounded-full text-sm text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
       >
-        <span aria-hidden="true" className="text-lg">
-          🔍
+        <span aria-hidden="true">
+          Search...
         </span>
       </button>
 
