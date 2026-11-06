@@ -1,11 +1,19 @@
+import PageHeader from '@/components/PageHeader'
+import { Card, CardContent } from '@/components/ui/card'
+
 // SSG: static content, built once
 export const dynamic = 'force-static'
 
 export default function Page() {
   return (
     <>
-      <h1 className="text-2xl font-bold">About</h1>
-      <p className="mt-2 text-gray-500 dark:text-gray-400">About the project will appear here.</p>
+      <PageHeader title="About" />
+      <Card className="max-w-2xl">
+        <CardContent className="text-muted-foreground">
+          OpenFinder is a searchable directory of open-source alternatives to proprietary
+          software. Built for the ECE WebTech course by team 105.
+        </CardContent>
+      </Card>
     </>
   )
 }

@@ -1,16 +1,14 @@
 // SSG: static by default
 import Link from 'next/link'
+import EmptyState from '@/components/EmptyState'
+import { Button } from '@/components/ui/button'
 
 export default function NotFound() {
   return (
-    <>
-      <h1 className="text-2xl font-bold">404 — Page not found</h1>
-      <p className="mt-2 text-gray-500 dark:text-gray-400">
-        The page you are looking for does not exist.
-      </p>
-      <Link href="/" className="mt-4 inline-block underline underline-offset-4">
-        Back to home
-      </Link>
-    </>
+    <EmptyState title="404 — Page not found" description="The page you are looking for does not exist.">
+      <Button asChild>
+        <Link href="/">Back to home</Link>
+      </Button>
+    </EmptyState>
   )
 }
