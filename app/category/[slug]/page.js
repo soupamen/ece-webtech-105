@@ -1,17 +1,36 @@
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import PageHeader from '@/components/PageHeader'
+import ToolCard from '@/components/ToolCard'
+import EmptyState from '@/components/EmptyState'
+import { categories, tools } from '@/lib/placeholder-data'
+
 // SSG params: one static page per category, built with generateStaticParams
 export async function generateStaticParams() {
-  return [{ slug: 'example' }]
+  return categories.map(({ slug }) => ({ slug }))
 }
 
 export default async function Page({ params }) {
   const { slug } = await params
+  const category = categories.find((c) => c.slug === slug)
+  if (!category) notFound()
+  const list = tools.filter((t) => t.category === slug)
 
   return (
     <>
-      <h1 className="text-2xl font-bold">Category: {slug}</h1>
-      <p className="mt-2 text-gray-500 dark:text-gray-400">
-        The tools of this category will appear here.
+      <p className="mb-2 text-sm text-muted-foreground">
+        <Link href="/category" className="hover:underline">Categories</Link> / {category.name}
       </p>
+      <PageHeader title={category.name} description={category.description} />
+      {list.length ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {list.map((t) => (
+            <ToolCard key={t.slug} tool={t} />
+          ))}
+        </div>
+      ) : (
+        <EmptyState title="No tool yet" description="This category is empty." />
+      )}
     </>
   )
 }
