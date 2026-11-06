@@ -9,12 +9,12 @@ user-facing features are still to be implemented.
 
 | Document | Use it for |
 | --- | --- |
-| [Architecture](ARCHITECTURE.md) | Repository structure, route responsibilities, and extension rules |
-| [Rendering guide](RENDERING.md) | Why each route is static, dynamic, or incrementally regenerated |
-| [Project plan](Project_Plan.md) | Current scope, milestones, and definition of done |
-| [Course requirements](PROJECT_INSTRUCTIONS.md) | Technical and presentation requirements |
-| [Git branch cheatsheet](.cheatsheet-git-branches.md) | Common branch and collaboration commands |
-| [Evaluation template](PROJECT.md) | Official self-evaluation; this file is maintained separately |
+| [Architecture](documentation/ARCHITECTURE.md) | Repository structure, route responsibilities, and extension rules |
+| [Rendering guide](documentation/RENDERING.md) | Why each route is static, dynamic, or incrementally regenerated |
+| [Project plan](documentation/Project_Plan.md) | Current scope, milestones, and definition of done |
+| [Course requirements](documentation/PROJECT_INSTRUCTIONS.md) | Technical and presentation requirements |
+| [Git branch cheatsheet](documentation/.cheatsheet-git-branches.md) | Common branch and collaboration commands |
+| [Evaluation template](documentation/PROJECT.md) | Official self-evaluation; this file is maintained separately |
 
 ## Current status
 
@@ -76,6 +76,7 @@ npm --version
 ```bash
 git clone https://github.com/soupamen/ece-webtech-105.git
 cd ece-webtech-105
+cd client
 npm ci
 npm run dev
 ```
@@ -111,12 +112,13 @@ Never commit credentials or service-role keys.
 | `/profile` | Future personal profile surface | Dynamic |
 | `/not-found` | Fallback for unknown routes | Static |
 
-See the [rendering guide](RENDERING.md) for the reasoning and the exact source
-files behind each entry.
+See the [rendering guide](documentation/RENDERING.md) for the reasoning and the
+exact source files behind each entry.
 
 ## Development conventions
 
-- Keep routes in `app/` and reusable UI in `components/`.
+- The Next.js application is in `client/`; keep routes in `client/app/` and
+  reusable UI in `client/components/`.
 - Prefer Server Components. Add `'use client'` only when browser state or an
   event handler is required.
 - Keep route-specific data and rendering close to the route until a shared
@@ -132,19 +134,19 @@ files behind each entry.
 
 The home page and tool pages use caching by design. Use `npm run dev`, then check
 the route's `revalidate` or `dynamic` export in the matching file. See
-[RENDERING.md](RENDERING.md) before changing caching behavior.
+[RENDERING.md](documentation/RENDERING.md) before changing caching behavior.
 
 ### The navigation looks stale
 
-`components/layout/NavLinks.js` is a Client Component because it reads the current
-pathname. Restart the development server after changing configuration files, and
-check the browser console for compilation errors.
+`client/components/layout/NavLinks.js` is a Client Component because it reads the
+current pathname. Restart the development server after changing configuration
+files, and check the browser console for compilation errors.
 
 ### The build fails after a dependency change
 
-Run `npm ci` to reproduce the lockfile exactly, then run `npm run lint` and
-`npm run build` separately. If a dependency is no longer used, remove it from
-both `package.json` and `package-lock.json`.
+Run these commands from `client/` to reproduce the lockfile exactly, then run
+`npm run lint` and `npm run build` separately. If a dependency is no longer used,
+remove it from both `client/package.json` and `client/package-lock.json`.
 
 If the build stops with a Next.js security warning, follow the recommended
 Next.js upgrade path before deploying. Do not disable the guard as a workaround.
@@ -157,7 +159,8 @@ Next.js upgrade path before deploying. Do not disable the guard as a workaround.
 4. Update affected documentation and include a clear pull request description.
 5. Ask for review before merging.
 
-Use the [branch cheatsheet](.cheatsheet-git-branches.md) for common Git commands.
+Use the [branch cheatsheet](documentation/.cheatsheet-git-branches.md) for
+common Git commands.
 
 ## Team
 

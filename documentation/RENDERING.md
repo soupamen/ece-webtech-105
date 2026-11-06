@@ -1,22 +1,22 @@
 # Rendering guide
 
 This document records the rendering decision for every current route. It is
-deliberately based on the code in `app/`; update it whenever a route's data
+deliberately based on the code in `client/app/`; update it whenever a route's data
 requirements change.
 
 ## Quick reference
 
 | Route | Source file | Mode | Why |
 | --- | --- | --- | --- |
-| `/` | `app/page.js` | ISR, 3,600 seconds | Public landing content can be cached and refreshed hourly |
-| `/about` | `app/about/page.js` | Static | Content has no request-time data |
-| `/category` | `app/category/page.js` | Static | Category index is currently placeholder content |
-| `/category/[slug]` | `app/category/[slug]/page.js` | Static parameters | Known category pages are generated from `generateStaticParams` |
-| `/tool/[slug]` | `app/tool/[slug]/page.js` | ISR, 60 seconds | Public tool details are cacheable and may change |
-| `/explore` | `app/explore/page.js` | Dynamic | The future page will depend on request filters |
-| `/list` | `app/list/page.js` | Dynamic | Lists will contain user-specific data |
-| `/profile` | `app/profile/page.js` | Dynamic | Profiles will contain user-specific data |
-| `/not-found` | `app/not-found.js` | Static | The fallback has no request-time data |
+| `/` | `client/app/page.js` | ISR, 3,600 seconds | Public landing content can be cached and refreshed hourly |
+| `/about` | `client/app/about/page.js` | Static | Content has no request-time data |
+| `/category` | `client/app/category/page.js` | Static | Category index is currently placeholder content |
+| `/category/[slug]` | `client/app/category/[slug]/page.js` | Static parameters | Known category pages are generated from `generateStaticParams` |
+| `/tool/[slug]` | `client/app/tool/[slug]/page.js` | ISR, 60 seconds | Public tool details are cacheable and may change |
+| `/explore` | `client/app/explore/page.js` | Dynamic | The future page will depend on request filters |
+| `/list` | `client/app/list/page.js` | Dynamic | Lists will contain user-specific data |
+| `/profile` | `client/app/profile/page.js` | Dynamic | Profiles will contain user-specific data |
+| `/not-found` | `client/app/not-found.js` | Static | The fallback has no request-time data |
 
 ## Decision rules
 
@@ -46,7 +46,7 @@ cache bug without documenting the reason.
 
 ### Client Components (CSR)
 
-Client rendering is limited to interactive UI. `components/layout/NavLinks.js`
+Client rendering is limited to interactive UI. `client/components/layout/NavLinks.js`
 uses `'use client'` because it reads `usePathname()` to mark the active link.
 Keep the surrounding layout and pages as Server Components.
 
