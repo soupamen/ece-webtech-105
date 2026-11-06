@@ -148,9 +148,9 @@ Use the [branch cheatsheet](.cheatsheet-git-branches.md) for common Git commands
 
 ## Team
 
-- Yannis De Saint Loubert
-- Lilian Bulteau
-- Arsène Léonard Barton--von Saurma
+- Yannis De Saint Loubert "supamen"
+- Lilian Bulteau "lilianblt6"
+- Arsène Léonard Barton--von Saurma "Omani29"
 
 ## License
 
