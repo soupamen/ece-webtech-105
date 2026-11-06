@@ -42,21 +42,14 @@ Known setup limitations:
 
 - The `lint` script exists, but ESLint is not yet included in `package.json`; the
   foundation milestone must add and configure it.
-- `main` still uses Next.js 16.4.0, whose security upgrade guard blocks
-  `npm run build`. A tested upgrade is available on the separate
-  `security/next-upgrade` branch; see below.
+- `npm audit` currently reports two moderate vulnerabilities through `nodemon`
+  and `minimatch`.
 
 ### Next.js security upgrade
 
-As of 2026-11-06, commit `3c3dc38` on `security/next-upgrade` updates Next.js
-from 16.4.0 to 16.4.3 and adds the security-upgrade configuration. In that
-worktree, `npm ci` and `npm run build` pass, and npm reports no known
-vulnerabilities.
-
-This branch is local and has not been pushed or merged. It was created from the
-older `318e4f5` commit and is 22 commits behind the current `main`. Reconcile
-the upgrade with current `main` before integrating it; do not merge the stale
-branch as-is.
+The current `main` uses Next.js 16.4.5. The earlier `security/next-upgrade`
+branch was an isolated test of 16.4.3 from an older base; it is not needed to
+use or integrate the update on `main`.
 
 ## Prerequisites
 
