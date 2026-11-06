@@ -11,7 +11,7 @@ user-facing features are still to be implemented.
 | --- | --- |
 | [Architecture](documentation/ARCHITECTURE.md) | Repository structure, route responsibilities, and extension rules |
 | [Rendering guide](documentation/RENDERING.md) | Why each route is static, dynamic, or incrementally regenerated |
-| [Project plan](documentation/Project_Plan.md) | Current scope, milestones, and definition of done |
+| [Project plan](documentation/PROJECT_PLAN.md) | Current scope, milestones, and definition of done |
 | [Course requirements](documentation/PROJECT_INSTRUCTIONS.md) | Technical and presentation requirements |
 | [Git branch cheatsheet](documentation/.cheatsheet-git-branches.md) | Common branch and collaboration commands |
 | [Evaluation template](documentation/PROJECT.md) | Official self-evaluation; this file is maintained separately |
