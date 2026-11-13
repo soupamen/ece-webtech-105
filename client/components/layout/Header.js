@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import NavLinks from './NavLinks'
+import ThemeToggle from './ThemeToggle'
 
 export default function Header() {
   return (
@@ -8,7 +9,10 @@ export default function Header() {
         <Link href="/" className="font-bold">
           WebTech 105
         </Link>
-        <NavLinks />
+        <div className="flex items-center gap-4">
+          <NavLinks />
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   )
