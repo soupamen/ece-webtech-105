@@ -36,13 +36,11 @@ export default function SearchBar() {
       <button
         type="button"
         onClick={() => setExpanded((isExpanded) => !isExpanded)}
-        aria-label="Open search"
+        aria-label={expanded ? 'Close search' : 'Open search'}
         aria-expanded={expanded}
         className="flex h-9 w-20 shrink-0 items-center justify-center rounded-full text-sm text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
       >
-        <span aria-hidden="true">
-          Search...
-        </span>
+        {!expanded && <span aria-hidden="true">Search...</span>}
       </button>
 
       <input
