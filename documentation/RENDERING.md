@@ -60,3 +60,4 @@ Keep the surrounding layout and pages as Server Components.
 4. Run `npm run build` and inspect the route behavior locally.
 5. If the route becomes user-specific, review data access and security before
    shipping it.
+
