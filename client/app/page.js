@@ -1,12 +1,14 @@
 import SearchBar from '@/components/SearchBar'
 import CategoryCard from '@/components/CategoryCard'
 import ToolCard from '@/components/ToolCard'
-import { categories, tools } from '@/lib/placeholder-data'
+import { getCategories, getTools } from '@/lib/supabase'
 
 // ISR: static, refreshed every hour
 export const revalidate = 3600
 
-export default function Page() {
+export default async function Page() {
+  const [categories, tools] = await Promise.all([getCategories(), getTools()])
+
   return (
     <div className="space-y-12">
       <section className="flex flex-col items-center gap-4 py-8 text-center">

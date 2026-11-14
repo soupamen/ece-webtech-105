@@ -2,13 +2,14 @@ import PageHeader from '@/components/PageHeader'
 import SearchBar from '@/components/SearchBar'
 import ToolCard from '@/components/ToolCard'
 import EmptyState from '@/components/EmptyState'
-import { tools } from '@/lib/placeholder-data'
+import { getTools } from '@/lib/supabase'
 
 // SSR: results depend on URL filters, rendered on every request
 export const dynamic = 'force-dynamic'
 
 export default async function Page({ searchParams }) {
   const { q = '' } = await searchParams
+  const tools = await getTools()
   const query = q.toLowerCase()
   const results = tools.filter((t) =>
     `${t.name} ${t.alternativeTo}`.toLowerCase().includes(query)
