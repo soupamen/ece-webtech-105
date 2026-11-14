@@ -4,11 +4,13 @@
 
 OpenFinder is currently a small Next.js App Router prototype. The codebase is
 intentionally simple: pages render placeholder content, the root layout owns the
-site chrome, and the navigation is the only client-side component.
+site chrome, and the navigation is the only client-side component. The initial
+directory schema is versioned in `supabase/migrations/` and populated by
+`supabase/seed.sql`.
 
 The target product is a searchable directory of open-source alternatives. Future
-features must be introduced incrementally; the current repository does not yet
-contain a database, authentication, API integration, or domain model.
+features must be introduced incrementally; authentication, API integration, and
+application data access are still planned.
 
 ## Runtime shape
 
@@ -89,6 +91,17 @@ When product features are added, keep these concerns separate:
 | Data access | `client/lib/` | Keep database and external API calls out of presentational components |
 | Database schema and policies | `supabase/` | Version migrations and test RLS with the schema |
 | Automated tests | `tests/` | Group unit, integration, and end-to-end tests by purpose |
+
+### Initial data model
+
+The directory data is split into two public tables:
+
+- `categories` stores the category slug, display name, and description.
+- `tools` stores each alternative and references its category through
+  `category_id`.
+
+Both tables are readable by anonymous and authenticated users. Writes are not
+exposed yet; user lists and profiles remain future features.
 
 Do not create these folders until the corresponding feature exists.
 

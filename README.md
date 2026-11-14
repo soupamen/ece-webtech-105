@@ -31,8 +31,8 @@ Implemented in the prototype:
 
 Not implemented yet:
 
-- Supabase database and authentication
-- Resource and category data
+- Supabase authentication
+- Application data access and resource management
 - Search, filtering, lists, profiles, and moderation
 - Automated tests and CI
 - Production deployment
