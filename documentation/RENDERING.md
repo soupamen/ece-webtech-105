@@ -10,9 +10,9 @@ requirements change.
 | --- | --- | --- | --- |
 | `/` | `client/app/page.js` | ISR, 3,600 seconds | Public landing content can be cached and refreshed hourly |
 | `/about` | `client/app/about/page.js` | Static | Content has no request-time data |
-| `/category` | `client/app/category/page.js` | Static | Category index is currently placeholder content |
-| `/category/[slug]` | `client/app/category/[slug]/page.js` | Static parameters | Known category pages are generated from `generateStaticParams` |
-| `/tool/[slug]` | `client/app/tool/[slug]/page.js` | ISR, 60 seconds | Public tool details are cacheable and may change |
+| `/category` | `client/app/category/page.js` | Static | Category index is read from Supabase at build time |
+| `/category/[slug]` | `client/app/category/[slug]/page.js` | Static parameters | Known category pages are generated from Supabase data |
+| `/tool/[slug]` | `client/app/tool/[slug]/page.js` | ISR, 60 seconds | Public tool details are read from Supabase and cacheable |
 | `/explore` | `client/app/explore/page.js` | Dynamic | The future page will depend on request filters |
 | `/list` | `client/app/list/page.js` | Dynamic | Lists will contain user-specific data |
 | `/profile` | `client/app/profile/page.js` | Dynamic | Profiles will contain user-specific data |
@@ -24,7 +24,8 @@ requirements change.
 
 Use static rendering when the output is the same for every visitor and does not
 need request-time data. `dynamic = 'force-static'` makes that intent explicit on
-the about and category index pages.
+the about and category index pages. The public catalogue is read from Supabase
+during the static build.
 
 ### Incremental Static Regeneration (ISR)
 
