@@ -1,8 +1,10 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
 export default function SearchBar() {
+  const router = useRouter()
   const [expanded, setExpanded] = useState(false)
   const [query, setQuery] = useState('')
   const inputRef = useRef(null)
@@ -25,8 +27,16 @@ export default function SearchBar() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    const q = query.trim()
+    if (q) router.push(`/explore?q=${encodeURIComponent(q)}`)
+  }
+
   return (
-    <div
+    <form
+      role="search"
+      onSubmit={handleSubmit}
       className={`flex shrink-0 items-center overflow-hidden rounded-full border transition-[width,colors] duration-300 ${
         expanded
           ? 'w-52 border-gray-400 bg-white sm:w-64 dark:border-gray-500 dark:bg-gray-900'
@@ -64,6 +74,6 @@ export default function SearchBar() {
           ×
         </button>
       )}
-    </div>
+    </form>
   )
 }
