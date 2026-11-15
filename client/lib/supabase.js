@@ -71,3 +71,9 @@ export async function getTool(slug) {
   if (error) throw error
   return data ? { ...mapTool(data), categoryName: data.category.name } : null
 }
+
+// No .select() after insert: RLS forbids reading contacts back.
+export async function createContact(contact) {
+  const { error } = await supabase.from('contacts').insert(contact)
+  if (error) throw error
+}
