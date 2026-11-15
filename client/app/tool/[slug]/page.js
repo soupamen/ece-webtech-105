@@ -28,7 +28,7 @@ export default async function Page({ params }) {
       </p>
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{tool.name}</h1>
+          <h1 className="wt-title">{tool.name}</h1>
           <p className="mt-2 text-muted-foreground">{tool.description}</p>
           <Badge variant="secondary" className="mt-3">
             Alternative to {tool.alternativeTo}
