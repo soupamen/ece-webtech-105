@@ -1,11 +1,13 @@
 import PageHeader from '@/components/PageHeader'
 import CategoryCard from '@/components/CategoryCard'
-import { categories } from '@/lib/placeholder-data'
+import { getCategories } from '@/lib/supabase'
 
 // SSG: categories rarely change, built once
 export const dynamic = 'force-static'
 
-export default function Page() {
+export default async function Page() {
+  const categories = await getCategories()
+
   return (
     <>
       <PageHeader title="Categories" description="Browse alternatives by type of software." />

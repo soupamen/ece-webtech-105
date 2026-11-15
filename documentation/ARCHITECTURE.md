@@ -4,21 +4,23 @@
 
 OpenFinder is currently a small Next.js App Router prototype. The codebase is
 intentionally simple: pages render placeholder content, the root layout owns the
-site chrome, and the navigation is the only client-side component.
+site chrome, and the navigation is the only client-side component. The initial
+directory schema is versioned in `supabase/migrations/` and populated by
+`supabase/seed.sql`.
 
 The target product is a searchable directory of open-source alternatives. Future
-features must be introduced incrementally; the current repository does not yet
-contain a database, authentication, API integration, or domain model.
+features must be introduced incrementally; authentication, API integration, and
+application data access are still planned.
 
 ## Runtime shape
 
 ```mermaid
 flowchart TD
-    Browser --> RootLayout[app/layout.js]
-    RootLayout --> Pages[app/**/page.js]
-    RootLayout --> Header[components/layout/Header.js]
-    Header --> Nav[components/layout/NavLinks.js]
-    Pages --> Tailwind[app/globals.css]
+    Browser --> RootLayout[client/app/layout.js]
+    RootLayout --> Pages[client/app/**/page.js]
+    RootLayout --> Header[client/components/layout/Header.js]
+    Header --> Nav[client/components/layout/NavLinks.js]
+    Pages --> Tailwind[client/app/globals.css]
 ```
 
 All current pages are rendered by Next.js. The browser only needs JavaScript for
@@ -27,7 +29,7 @@ the active-link navigation component.
 ## Repository structure
 
 ```text
-app/
+client/app/
   layout.js                 # HTML shell, metadata, header, main container
   page.js                   # Home page
   not-found.js              # Global 404 page
@@ -39,16 +41,16 @@ app/
   list/page.js              # Dynamic personal-list placeholder
   profile/page.js           # Dynamic profile placeholder
   globals.css               # Global Tailwind import
-components/
+client/components/
   layout/Header.js          # Sticky header and brand link
   layout/NavLinks.js        # Active route navigation (Client Component)
-public/
+client/public/
   profile.png               # Static public asset
 ```
 
 ## Request and rendering flow
 
-1. Next.js enters `app/layout.js`.
+1. Next.js enters `client/app/layout.js`.
 2. The layout loads global CSS, sets metadata, renders `Header`, and places the
    route content inside the shared `<main>` container.
 3. The selected page renders its content.
@@ -68,13 +70,13 @@ out of client bundles.
 
 ### Client Components only for interaction
 
-`NavLinks` is a Client Component because `usePathname()` requires browser
+`client/components/layout/NavLinks.js` is a Client Component because `usePathname()` requires browser
 execution. New client components should have a similarly concrete reason, such as
 local form state, a browser API, or event handlers.
 
 ### Styling
 
-Tailwind v4 is imported once from `app/globals.css`. Prefer utility classes
+Tailwind v4 is imported once from `client/app/globals.css`. Prefer utility classes
 already used by the project. Extract a reusable component when a visual pattern
 appears in more than one route, rather than copying a long class list.
 
@@ -84,11 +86,22 @@ When product features are added, keep these concerns separate:
 
 | Concern | Planned location | Rule |
 | --- | --- | --- |
-| Routes and page composition | `app/` | Keep route-specific orchestration here |
-| Reusable UI | `components/` | Default to Server Components |
-| Data access | `lib/` | Keep database and external API calls out of presentational components |
+| Routes and page composition | `client/app/` | Keep route-specific orchestration here |
+| Reusable UI | `client/components/` | Default to Server Components |
+| Data access | `client/lib/` | Keep database and external API calls out of presentational components |
 | Database schema and policies | `supabase/` | Version migrations and test RLS with the schema |
 | Automated tests | `tests/` | Group unit, integration, and end-to-end tests by purpose |
+
+### Initial data model
+
+The directory data is split into two public tables:
+
+- `categories` stores the category slug, display name, and description.
+- `tools` stores each alternative and references its category through
+  `category_id`.
+
+Both tables are readable by anonymous and authenticated users. Writes are not
+exposed yet; user lists and profiles remain future features.
 
 Do not create these folders until the corresponding feature exists.
 
