@@ -12,7 +12,7 @@ export default async function Page() {
   return (
     <div className="space-y-12">
       <section className="flex flex-col items-center gap-4 py-8 text-center">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+        <h1 className="wt-title sm:text-4xl">
           Find the open-source alternative
         </h1>
         <p className="max-w-xl text-muted-foreground">
