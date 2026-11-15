@@ -3,18 +3,19 @@ import { notFound } from 'next/navigation'
 import PageHeader from '@/components/PageHeader'
 import ToolCard from '@/components/ToolCard'
 import EmptyState from '@/components/EmptyState'
-import { categories, tools } from '@/lib/placeholder-data'
+import { getCategories, getCategory, getToolsByCategory } from '@/lib/supabase'
 
 // SSG params: one static page per category, built with generateStaticParams
 export async function generateStaticParams() {
+  const categories = await getCategories()
   return categories.map(({ slug }) => ({ slug }))
 }
 
 export default async function Page({ params }) {
   const { slug } = await params
-  const category = categories.find((c) => c.slug === slug)
+  const category = await getCategory(slug)
   if (!category) notFound()
-  const list = tools.filter((t) => t.category === slug)
+  const list = await getToolsByCategory(slug)
 
   return (
     <>

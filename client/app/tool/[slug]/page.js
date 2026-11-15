@@ -3,26 +3,26 @@ import { notFound } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { categories, tools } from '@/lib/placeholder-data'
+import { getTool, getTools } from '@/lib/supabase'
 
 // ISR: one static page per tool, refreshed every 60 seconds
 export const revalidate = 60
 
 export async function generateStaticParams() {
+  const tools = await getTools()
   return tools.map(({ slug }) => ({ slug }))
 }
 
 export default async function Page({ params }) {
   const { slug } = await params
-  const tool = tools.find((t) => t.slug === slug)
+  const tool = await getTool(slug)
   if (!tool) notFound()
-  const category = categories.find((c) => c.slug === tool.category)
 
   return (
     <>
       <p className="mb-2 text-sm text-muted-foreground">
-        <Link href={`/category/${category.slug}`} className="hover:underline">
-          {category.name}
+        <Link href={`/category/${tool.category}`} className="hover:underline">
+          {tool.categoryName}
         </Link>{' '}
         / {tool.name}
       </p>
