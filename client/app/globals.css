@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/forms";
 
 /* shadcn/ui neutral theme. Dark follows prefers-color-scheme (Tailwind's default dark: variant). */
 @theme inline {
