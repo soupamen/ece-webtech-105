@@ -70,3 +70,10 @@
     @apply border-border outline-ring/50;
   }
 }
+
+/* No mb-10 from the lab example: PageHeader already spaces the title. */
+@layer components {
+  .wt-title {
+    @apply text-3xl font-bold tracking-tight underline underline-offset-4;
+  }
+}
