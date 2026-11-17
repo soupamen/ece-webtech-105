@@ -4,9 +4,21 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getGithubRepository } from '@/lib/github'
+import { createPageMetadata } from '@/lib/metadata'
 import { getTool } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata({ params }) {
+  const { slug } = await params
+  const tool = await getTool(slug)
+
+  return createPageMetadata({
+    title: tool?.name ?? 'Tool not found',
+    description: tool?.description ?? 'Discover open-source software alternatives.',
+    path: `/tool/${slug}`,
+  })
+}
 
 export default async function Page({ params }) {
   const { slug } = await params

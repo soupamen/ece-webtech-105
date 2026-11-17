@@ -1,10 +1,15 @@
 import './globals.css'
 import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
+import { metadataBase } from '@/lib/metadata'
 
 export const metadata = {
-  title: 'WebTech 105',
-  description: 'ECE WebTech project — team 105',
+  metadataBase,
+  title: {
+    default: 'OpenFinder | Open-source alternatives',
+    template: '%s | OpenFinder',
+  },
+  description: 'Find open-source alternatives to proprietary software.',
 }
 
 export default function RootLayout({ children }) {

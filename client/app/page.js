@@ -1,9 +1,17 @@
 import SearchBar from '@/components/SearchBar'
 import CategoryCard from '@/components/CategoryCard'
 import ToolCard from '@/components/ToolCard'
+import EmptyState from '@/components/EmptyState'
 import { getCategories, getTools } from '@/lib/supabase'
+import { createPageMetadata } from '@/lib/metadata'
 
 export const dynamic = 'force-dynamic'
+
+export const metadata = createPageMetadata({
+  title: 'Open-source alternatives',
+  description: 'Search open-source alternatives to popular proprietary tools.',
+  path: '/',
+})
 
 export default async function Page() {
   const [categories, tools] = await Promise.all([getCategories(), getTools()])
@@ -22,20 +30,34 @@ export default async function Page() {
 
       <section>
         <h2 className="mb-4 text-xl font-semibold">Categories</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((c) => (
-            <CategoryCard key={c.slug} category={c} />
-          ))}
-        </div>
+        {categories.length ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {categories.map((c) => (
+              <CategoryCard key={c.slug} category={c} />
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            title="No categories yet"
+            description="Check back soon for the first category."
+          />
+        )}
       </section>
 
       <section>
         <h2 className="mb-4 text-xl font-semibold">Featured tools</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {tools.map((t) => (
-            <ToolCard key={t.slug} tool={t} />
-          ))}
-        </div>
+        {tools.length ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {tools.map((t) => (
+              <ToolCard key={t.slug} tool={t} />
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            title="No tools yet"
+            description="Check back soon for the first open-source alternatives."
+          />
+        )}
       </section>
     </div>
   )

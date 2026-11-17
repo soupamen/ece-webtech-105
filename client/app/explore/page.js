@@ -4,10 +4,17 @@ import ToolCard from '@/components/ToolCard'
 import EmptyState from '@/components/EmptyState'
 import Pagination from '@/components/Pagination'
 import { parseExploreParams } from '@/lib/explore'
+import { createPageMetadata } from '@/lib/metadata'
 import { getCategories, getToolsPage } from '@/lib/supabase'
 
 // rendu serveur, resultat dependant des filtres dans l url
 export const dynamic = 'force-dynamic'
+
+export const metadata = createPageMetadata({
+  title: 'Explore open-source alternatives',
+  description: 'Search and filter the OpenFinder catalogue.',
+  path: '/explore',
+})
 
 export default async function Page({ searchParams }) {
   const params = parseExploreParams(await searchParams)
