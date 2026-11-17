@@ -6,6 +6,11 @@ import {
   isValidEmail,
 } from '../lib/auth.js'
 import { getListMessage, validateListFields } from '../lib/lists.js'
+import {
+  getModerationMessage,
+  isModerator,
+  validateToolSubmission,
+} from '../lib/moderation.js'
 
 test('validates email format and length', () => {
   assert.equal(isValidEmail('person@example.com'), true)
@@ -35,4 +40,39 @@ test('only exposes expected auth and list messages', () => {
   assert.equal(getAuthMessage('unknown'), null)
   assert.equal(getListMessage('list-created'), 'List created.')
   assert.equal(getListMessage('unknown'), null)
+})
+
+test('validates tool suggestions and permits only secure optional links', () => {
+  const validSuggestion = {
+    name: ' Penpot ',
+    alternativeTo: ' Figma ',
+    description: ' Open source design software ',
+    categoryId: '00000000-0000-0000-0000-000000000001',
+    githubRepo: 'penpot/penpot',
+    websiteUrl: 'https://penpot.app',
+  }
+
+  assert.deepEqual(validateToolSubmission(validSuggestion), {
+    name: 'Penpot',
+    alternative_to: 'Figma',
+    description: 'Open source design software',
+    category_id: '00000000-0000-0000-0000-000000000001',
+    github_repo: 'penpot/penpot',
+    website_url: 'https://penpot.app',
+  })
+  assert.equal(
+    validateToolSubmission({ ...validSuggestion, websiteUrl: 'javascript:alert(1)' }),
+    null
+  )
+  assert.equal(
+    validateToolSubmission({ ...validSuggestion, githubRepo: 'not/a/repository/path' }),
+    null
+  )
+})
+
+test('recognizes moderators from trusted app metadata', () => {
+  assert.equal(isModerator({ app_metadata: { role: 'moderator' } }), true)
+  assert.equal(isModerator({ user_metadata: { role: 'moderator' } }), false)
+  assert.equal(getModerationMessage('submitted'), 'Your suggestion was sent to the moderation team.')
+  assert.equal(getModerationMessage('unknown'), null)
 })

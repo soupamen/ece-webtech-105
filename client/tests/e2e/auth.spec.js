@@ -19,6 +19,15 @@ test('a guest is sent to sign in before opening personal lists', async ({
   ).toBeVisible()
 })
 
+test('a guest is sent to sign in before suggesting a tool', async ({ page }) => {
+  await page.goto('/suggest')
+
+  await expect(page).toHaveURL(/\/auth\/login\?next=%2Fsuggest$/)
+  await expect(
+    page.getByRole('heading', { name: 'Sign in to OpenFinder' })
+  ).toBeVisible()
+})
+
 test('auth forms reject external return paths', async ({ page }) => {
   await page.goto('/auth/login?next=https%3A%2F%2Fexample.com')
 
@@ -65,6 +74,37 @@ test('a user can sign up and manage a personal list', async ({ page }) => {
   await page.goto('/profile')
   await page.getByRole('button', { name: 'Sign out' }).click()
   await expect(page.getByRole('heading', { name: 'Guest' })).toBeVisible()
+})
+
+test('a user can send a tool suggestion but cannot open moderation', async ({
+  page,
+}) => {
+  test.skip(!process.env.SUPABASE_E2E_ENABLED, 'requires local Supabase')
+
+  const email = `suggest-${Date.now()}@example.test`
+  const toolName = `Suggested tool ${Date.now()}`
+  await page.goto('/auth/signup')
+  await page.getByLabel('Email').fill(email)
+  await page.getByLabel('Password', { exact: true }).fill('OpenFinder-Test-123')
+  await page.getByLabel('Confirm password').fill('OpenFinder-Test-123')
+  await page.getByRole('button', { name: 'Create account' }).click()
+
+  await expect(page).toHaveURL(/\/profile$/)
+  await page.goto('/suggest')
+  await page.getByLabel('Tool name').fill(toolName)
+  await page.getByLabel('Alternative to').fill('A proprietary tool')
+  await page.getByLabel('Category').selectOption({ label: 'Design' })
+  await page.getByLabel('Description').fill('A proposed open-source design tool.')
+  await page.getByLabel('GitHub repository').fill('example/suggested-tool')
+  await page.getByLabel('Official website').fill('https://example.test')
+  await page.getByRole('button', { name: 'Send suggestion' }).click()
+
+  await expect(page).toHaveURL(/\/suggest\?notice=submitted$/)
+  await expect(page.getByText(toolName)).toBeVisible()
+  await expect(page.getByText('pending', { exact: true })).toBeVisible()
+
+  await page.goto('/moderation')
+  await expect(page).toHaveURL(/\/profile$/)
 })
 
 test('navigation wraps at mobile width and the theme toggle works', async ({

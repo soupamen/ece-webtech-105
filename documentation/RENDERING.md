@@ -14,9 +14,14 @@ requirements change.
 | `/category/[slug]` | `client/app/category/[slug]/page.js` | Static parameters | Known category pages are generated from Supabase data |
 | `/tool/[slug]` | `client/app/tool/[slug]/page.js` | ISR, 60 seconds | Public tool details and optional GitHub data are cacheable |
 | `/explore` | `client/app/explore/page.js` | Dynamic | Results depend on URL search, category, and page parameters |
-| `/list` | `client/app/list/page.js` | Dynamic | Lists will contain user-specific data |
-| `/profile` | `client/app/profile/page.js` | Dynamic | Profiles will contain user-specific data |
-| `/not-found` | `client/app/not-found.js` | Static | The fallback has no request-time data |
+| `/list` | `client/app/list/page.js` | Dynamic | Lists contain user-specific data |
+| `/profile` | `client/app/profile/page.js` | Dynamic | Account state depends on the signed-in user |
+| `/auth/login` | `client/app/auth/login/page.js` | Dynamic | Form state depends on the requested return path |
+| `/auth/signup` | `client/app/auth/signup/page.js` | Dynamic | Form state depends on the requested return path |
+| `/auth/callback` | `client/app/auth/callback/route.js` | Dynamic | Exchanges a one-time email-confirmation code |
+| `/suggest` | `client/app/suggest/page.js` | Dynamic | Shows private submissions and writes for the signed-in user |
+| `/moderation` | `client/app/moderation/page.js` | Dynamic | Reads private suggestions for authorized moderators |
+| `404` | `client/app/not-found.js` | Static | The fallback has no request-time data |
 
 ## Decision rules
 
@@ -51,14 +56,19 @@ so the Supabase-backed page remains available.
 Use `dynamic = 'force-dynamic'` when a page depends on request-time state, such
 as URL filters or authenticated user data. `/explore` reads `q`, `category`, and
 `page` from the URL and performs the filtered, counted Supabase query on every
-request. Do not use dynamic rendering to bypass a data or cache bug without
+request. Account, list, suggestion, and moderation routes use cookies and
+user-specific Supabase access, so they must not be statically rendered or
+shared between users. The authenticated routes set `noindex` metadata where
+appropriate. Do not use dynamic rendering to bypass a data or cache bug without
 documenting the reason.
 
 ### Client Components (CSR)
 
 Client rendering is limited to interactive UI. `client/components/layout/NavLinks.js`
 uses `'use client'` because it reads `usePathname()` to mark the active link.
-Keep the surrounding layout and pages as Server Components.
+`client/components/lists/AddToolToListForm.js` uses it for the user's list
+selection when saving a tool. Keep the surrounding layout and pages as Server
+Components.
 
 ## Adding or changing a route
 

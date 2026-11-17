@@ -1,7 +1,7 @@
 # Course requirements
 
 This document is the compact implementation checklist for the WebTech 105
-assignment. The official self-evaluation remains in [PROJECT.md](PROJECT.md),
+assignment. The official self-evaluation remains in [PROJECT.md](../PROJECT.md),
 which must not be edited as part of documentation maintenance.
 
 ## Required stack and security
@@ -13,7 +13,7 @@ which must not be edited as part of documentation maintenance.
 
 These are assignment requirements, not a description of what the current
 prototype already provides. Track implementation status in
-[Project_Plan.md](Project_Plan.md).
+[PROJECT_PLAN.md](PROJECT_PLAN.md).
 
 ## Minimum product requirements
 
