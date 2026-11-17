@@ -10,6 +10,7 @@ import {
 import AuthMessage from '@/components/auth/AuthMessage'
 import PageHeader from '@/components/PageHeader'
 import { createPageMetadata } from '@/lib/metadata'
+import { isModerator } from '@/lib/moderation'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/supabase/user'
 import { signOutAction } from '@/app/auth/actions'
@@ -52,6 +53,14 @@ export default async function ProfilePage({ searchParams }) {
                 <Button asChild>
                   <Link href="/list">My lists</Link>
                 </Button>
+                <Button asChild variant="outline">
+                  <Link href="/suggest">Suggest a tool</Link>
+                </Button>
+                {isModerator(user) && (
+                  <Button asChild variant="outline">
+                    <Link href="/moderation">Moderation queue</Link>
+                  </Button>
+                )}
                 <form action={signOutAction}>
                   <Button type="submit" variant="outline">
                     Sign out
