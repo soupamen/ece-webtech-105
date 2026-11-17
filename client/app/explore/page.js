@@ -2,34 +2,43 @@ import PageHeader from '@/components/PageHeader'
 import SearchBar from '@/components/SearchBar'
 import ToolCard from '@/components/ToolCard'
 import EmptyState from '@/components/EmptyState'
-import { getTools } from '@/lib/supabase'
+import { searchTools } from '@/lib/supabase'
 
 // SSR: results depend on URL filters, rendered on every request
 export const dynamic = 'force-dynamic'
 
 export default async function Page({ searchParams }) {
-  const { q = '' } = await searchParams
-  const tools = await getTools()
-  const query = q.toLowerCase()
-  const results = tools.filter((t) =>
-    `${t.name} ${t.alternativeTo}`.toLowerCase().includes(query)
-  )
+  const params = await searchParams
+  const rawQuery = typeof params.q === 'string' ? params.q.trim() : ''
+  const q = rawQuery.slice(0, 100)
 
-  return (
-    <>
-      <PageHeader title="Explore" description="Search every open-source alternative." />
-      <div className="mb-6">
-        <SearchBar defaultValue={q} />
-      </div>
-      {results.length ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {results.map((t) => (
-            <ToolCard key={t.slug} tool={t} />
-          ))}
+  try {
+    const tools = await searchTools(q)
+
+    return (
+      <>
+        <PageHeader title="Explore" description="Search every open-source alternative." />
+        <div className="mb-6">
+          <SearchBar defaultValue={q} />
         </div>
-      ) : (
-        <EmptyState title="No result" description={`Nothing matches "${q}".`} />
-      )}
-    </>
-  )
+        {tools.length ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {tools.map((tool) => (
+              <ToolCard key={tool.slug} tool={tool} />
+            ))}
+          </div>
+        ) : (
+          <EmptyState title="No result" description={`Nothing matches "${q}".`} />
+        )}
+      </>
+    )
+  } catch (error) {
+    console.error('Failed to load explore results', error)
+    return (
+      <EmptyState
+        title="Unable to load results"
+        description="Please try again later."
+      />
+    )
+  }
 }

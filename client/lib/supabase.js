@@ -39,6 +39,26 @@ export async function getTools() {
   return data.map(mapTool)
 }
 
+function escapeIlike(value) {
+  return value.replace(/[\\%_]/g, '\\$&')
+}
+
+export async function searchTools(q = '') {
+  const search = escapeIlike(q)
+  let query = supabase
+    .from('tools')
+    .select('slug, name, alternative_to, description, category:categories!inner(slug)')
+    .order('name')
+
+  if (search) {
+    query = query.or(`name.ilike.%${search}%,alternative_to.ilike.%${search}%`)
+  }
+
+  const { data, error } = await query
+  if (error) throw error
+  return (data ?? []).map(mapTool)
+}
+
 export async function getCategory(slug) {
   const { data, error } = await supabase
     .from('categories')
