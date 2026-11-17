@@ -43,7 +43,7 @@ function escapeIlike(value) {
   return value.replace(/[\\%_]/g, '\\$&')
 }
 
-export async function searchTools(q = '') {
+export async function searchTools({ q = '', category = '' } = {}) {
   const search = escapeIlike(q)
   let query = supabase
     .from('tools')
@@ -52,6 +52,10 @@ export async function searchTools(q = '') {
 
   if (search) {
     query = query.or(`name.ilike.%${search}%,alternative_to.ilike.%${search}%`)
+  }
+
+  if (category) {
+    query = query.eq('categories.slug', category)
   }
 
   const { data, error } = await query
