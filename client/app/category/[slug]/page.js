@@ -3,9 +3,22 @@ import { notFound } from 'next/navigation'
 import PageHeader from '@/components/PageHeader'
 import ToolCard from '@/components/ToolCard'
 import EmptyState from '@/components/EmptyState'
+import { createPageMetadata } from '@/lib/metadata'
 import { getCategory, getToolsByCategory } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata({ params }) {
+  const { slug } = await params
+  const category = await getCategory(slug)
+
+  return createPageMetadata({
+    title: category?.name ?? 'Category not found',
+    description:
+      category?.description ?? 'Browse open-source alternatives by category.',
+    path: `/category/${slug}`,
+  })
+}
 
 export default async function Page({ params }) {
   const { slug } = await params
