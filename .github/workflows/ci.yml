@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+
+      - run: npm ci
+      - run: npm ci --prefix client
+      - run: npm --prefix client run lint
+      - run: npm --prefix client test
+      - run: npm audit --prefix client
+
+      - run: npx supabase start --exclude studio,mailpit,imgproxy,vector,edge-runtime,logflare,supavisor
+      - run: npx supabase test db
+      - run: |
+          npx supabase status -o env \
+            | sed -E 's/^([A-Z_]+)="(.*)"$/\1=\2/; s/^API_URL=/NEXT_PUBLIC_SUPABASE_URL=/; s/^ANON_KEY=/NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=/' \
+            >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000" >> "$GITHUB_ENV"
+          echo "SUPABASE_E2E_ENABLED=1" >> "$GITHUB_ENV"
+
+      - run: npm --prefix client run build
+      - run: npx playwright install --with-deps chromium
+        working-directory: client
+      - run: npm --prefix client run test:e2e
