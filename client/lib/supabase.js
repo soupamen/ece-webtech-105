@@ -1,13 +1,23 @@
 import { createClient } from '@supabase/supabase-js'
+import { unstable_cache } from 'next/cache'
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+let supabase
 
-if (!url || !key) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY')
+function getSupabase() {
+  if (supabase) return supabase
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  if (!url || !key) {
+    throw new Error(
+      'Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY'
+    )
+  }
+
+  supabase = createClient(url, key)
+  return supabase
 }
 
-const supabase = createClient(url, key)
 export const EXPLORE_PAGE_SIZE = 12
 
 function mapTool(tool) {
@@ -22,25 +32,33 @@ function mapTool(tool) {
   }
 }
 
-export async function getCategories() {
-  const { data, error } = await supabase
-    .from('categories')
-    .select('slug, name, description')
-    .order('name')
+export const getCategories = unstable_cache(
+  async () => {
+    const { data, error } = await getSupabase()
+      .from('categories')
+      .select('slug, name, description')
+      .order('name')
 
-  if (error) throw error
-  return data
-}
+    if (error) throw error
+    return data ?? []
+  },
+  ['categories'],
+  { revalidate: 3600 }
+)
 
-export async function getTools() {
-  const { data, error } = await supabase
-    .from('tools')
-    .select('slug, name, alternative_to, description, category:categories!inner(slug)')
-    .order('name')
+export const getTools = unstable_cache(
+  async () => {
+    const { data, error } = await getSupabase()
+      .from('tools')
+      .select('slug, name, alternative_to, description, category:categories!inner(slug)')
+      .order('name')
 
-  if (error) throw error
-  return data.map(mapTool)
-}
+    if (error) throw error
+    return (data ?? []).map(mapTool)
+  },
+  ['tools'],
+  { revalidate: 3600 }
+)
 
 function escapeIlike(value) {
   return value.replace(/[\\%_]/g, '\\$&')
@@ -61,7 +79,7 @@ export async function getToolsPage({ q = '', category = '', page = 1 }) {
     return query
   }
 
-  let countQuery = supabase
+  let countQuery = getSupabase()
     .from('tools')
     .select('id, category:categories!inner(slug)', { count: 'exact', head: true })
   countQuery = applyFilters(countQuery)
@@ -72,7 +90,7 @@ export async function getToolsPage({ q = '', category = '', page = 1 }) {
   const totalPages = Math.max(1, Math.ceil(totalCount / EXPLORE_PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
 
-  let query = supabase
+  let query = getSupabase()
     .from('tools')
     .select('slug, name, alternative_to, description, category:categories!inner(slug)')
     .order('name')
@@ -92,43 +110,67 @@ export async function getToolsPage({ q = '', category = '', page = 1 }) {
   }
 }
 
-export async function getCategory(slug) {
-  const { data, error } = await supabase
-    .from('categories')
-    .select('slug, name, description')
-    .eq('slug', slug)
-    .maybeSingle()
+const getCachedCategory = unstable_cache(
+  async (slug) => {
+    const { data, error } = await getSupabase()
+      .from('categories')
+      .select('slug, name, description')
+      .eq('slug', slug)
+      .maybeSingle()
 
-  if (error) throw error
-  return data
+    if (error) throw error
+    return data
+  },
+  ['category'],
+  { revalidate: 3600 }
+)
+
+export function getCategory(slug) {
+  return getCachedCategory(slug)
 }
 
-export async function getToolsByCategory(slug) {
-  const { data, error } = await supabase
-    .from('tools')
-    .select('slug, name, alternative_to, description, category:categories!inner(slug)')
-    .eq('categories.slug', slug)
-    .order('name')
+const getCachedToolsByCategory = unstable_cache(
+  async (slug) => {
+    const { data, error } = await getSupabase()
+      .from('tools')
+      .select('slug, name, alternative_to, description, category:categories!inner(slug)')
+      .eq('categories.slug', slug)
+      .order('name')
 
-  if (error) throw error
-  return data.map(mapTool)
+    if (error) throw error
+    return (data ?? []).map(mapTool)
+  },
+  ['tools-by-category'],
+  { revalidate: 3600 }
+)
+
+export function getToolsByCategory(slug) {
+  return getCachedToolsByCategory(slug)
 }
 
-export async function getTool(slug) {
-  const { data, error } = await supabase
-    .from('tools')
-    .select(
-      'slug, name, alternative_to, description, github_repo, website_url, category:categories!inner(slug, name)'
-    )
-    .eq('slug', slug)
-    .maybeSingle()
+const getCachedTool = unstable_cache(
+  async (slug) => {
+    const { data, error } = await getSupabase()
+      .from('tools')
+      .select(
+        'slug, name, alternative_to, description, github_repo, website_url, category:categories!inner(slug, name)'
+      )
+      .eq('slug', slug)
+      .maybeSingle()
 
-  if (error) throw error
-  return data ? { ...mapTool(data), categoryName: data.category.name } : null
+    if (error) throw error
+    return data ? { ...mapTool(data), categoryName: data.category.name } : null
+  },
+  ['tool'],
+  { revalidate: 60 }
+)
+
+export function getTool(slug) {
+  return getCachedTool(slug)
 }
 
 export async function getLists() {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('lists')
     .select('id, user_id, name, description, created_at, list_items(list_id, tool_id, added_at)')
     .order('created_at', { ascending: false })
@@ -138,7 +180,7 @@ export async function getLists() {
 }
 
 export async function createList({ userId, name, description = null }) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('lists')
     .insert({ user_id: userId, name, description })
     .select('id, user_id, name, description, created_at')
@@ -149,7 +191,7 @@ export async function createList({ userId, name, description = null }) {
 }
 
 export async function addToolToList({ listId, toolId }) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('list_items')
     .insert({ list_id: listId, tool_id: toolId })
     .select('list_id, tool_id, added_at')
@@ -160,7 +202,7 @@ export async function addToolToList({ listId, toolId }) {
 }
 
 export async function removeToolFromList({ listId, toolId }) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('list_items')
     .delete()
     .eq('list_id', listId)

@@ -3,8 +3,7 @@ import CategoryCard from '@/components/CategoryCard'
 import ToolCard from '@/components/ToolCard'
 import { getCategories, getTools } from '@/lib/supabase'
 
-// ISR: static, refreshed every hour
-export const revalidate = 3600
+export const dynamic = 'force-dynamic'
 
 export default async function Page() {
   const [categories, tools] = await Promise.all([getCategories(), getTools()])

@@ -4,15 +4,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getGithubRepository } from '@/lib/github'
-import { getTool, getTools } from '@/lib/supabase'
+import { getTool } from '@/lib/supabase'
 
-// ISR: one static page per tool, refreshed every 60 seconds
-export const revalidate = 60
-
-export async function generateStaticParams() {
-  const tools = await getTools()
-  return tools.map(({ slug }) => ({ slug }))
-}
+export const dynamic = 'force-dynamic'
 
 export default async function Page({ params }) {
   const { slug } = await params
