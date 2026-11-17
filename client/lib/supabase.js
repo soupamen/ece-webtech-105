@@ -17,6 +17,8 @@ function mapTool(tool) {
     alternativeTo: tool.alternative_to,
     description: tool.description,
     category: tool.category.slug,
+    githubRepo: tool.github_repo,
+    websiteUrl: tool.website_url,
   }
 }
 
@@ -115,7 +117,9 @@ export async function getToolsByCategory(slug) {
 export async function getTool(slug) {
   const { data, error } = await supabase
     .from('tools')
-    .select('slug, name, alternative_to, description, category:categories!inner(slug, name)')
+    .select(
+      'slug, name, alternative_to, description, github_repo, website_url, category:categories!inner(slug, name)'
+    )
     .eq('slug', slug)
     .maybeSingle()
 
