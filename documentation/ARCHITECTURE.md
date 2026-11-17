@@ -2,15 +2,14 @@
 
 ## Scope
 
-OpenFinder is currently a small Next.js App Router prototype. The codebase is
-intentionally simple: pages render placeholder content, the root layout owns the
-site chrome, and the navigation is the only client-side component. The initial
-directory schema is versioned in `supabase/migrations/` and populated by
-`supabase/seed.sql`.
+OpenFinder is currently a small Next.js App Router application. The codebase is
+intentionally simple: pages own route composition, data access is centralized in
+`client/lib/`, the root layout owns the site chrome, and the navigation is the
+only client-side component. The schema is versioned in `supabase/migrations/`
+and populated by `supabase/seed.sql`.
 
-The target product is a searchable directory of open-source alternatives. Future
-features must be introduced incrementally; authentication, API integration, and
-application data access are still planned.
+The target product is a searchable directory of open-source alternatives.
+Authentication and user-facing collection features remain future work.
 
 ## Runtime shape
 
@@ -21,6 +20,10 @@ flowchart TD
     RootLayout --> Header[client/components/layout/Header.js]
     Header --> Nav[client/components/layout/NavLinks.js]
     Pages --> Tailwind[client/app/globals.css]
+    Pages --> Data[client/lib/supabase.js]
+    Pages --> GitHub[client/lib/github.js]
+    Data --> Supabase[(Supabase)]
+    GitHub --> GitHubAPI[GitHub REST API]
 ```
 
 All current pages are rendered by Next.js. The browser only needs JavaScript for
@@ -44,8 +47,14 @@ client/app/
 client/components/
   layout/Header.js          # Sticky header and brand link
   layout/NavLinks.js        # Active route navigation (Client Component)
+client/lib/
+  supabase.js               # Supabase queries and collection access functions
+  github.js                 # Server-side GitHub repository lookup
 client/public/
   profile.png               # Static public asset
+supabase/
+  migrations/               # Versioned PostgreSQL schema and RLS
+  seed.sql                   # Local demonstration data
 ```
 
 ## Request and rendering flow
@@ -92,16 +101,29 @@ When product features are added, keep these concerns separate:
 | Database schema and policies | `supabase/` | Version migrations and test RLS with the schema |
 | Automated tests | `tests/` | Group unit, integration, and end-to-end tests by purpose |
 
-### Initial data model
+### Data model
 
 The directory data is split into two public tables:
 
 - `categories` stores the category slug, display name, and description.
 - `tools` stores each alternative and references its category through
-  `category_id`.
+  `category_id`. It also stores optional `github_repo` and `website_url` values.
 
-Both tables are readable by anonymous and authenticated users. Writes are not
-exposed yet; user lists and profiles remain future features.
+Both catalogue tables are readable by anonymous and authenticated users. Writes
+are not exposed through their policies.
+
+Collections are prepared for the authentication milestone:
+
+- `lists` belongs to one `auth.users` record;
+- `list_items` links a list to a tool with a composite primary key;
+- RLS allows authenticated users to access only their own lists and list items.
+
+The collection access functions are prepared, but authentication and the
+`/list` and `/profile` interfaces remain placeholders.
+
+Public tool pages can enrich Supabase data with GitHub repository metadata.
+The API call is server-side, cached for 60 seconds, and optional: failures do
+not prevent the Supabase-backed tool page from rendering.
 
 Do not create these folders until the corresponding feature exists.
 
