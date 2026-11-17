@@ -2,7 +2,8 @@ import PageHeader from '@/components/PageHeader'
 import SearchBar from '@/components/SearchBar'
 import ToolCard from '@/components/ToolCard'
 import EmptyState from '@/components/EmptyState'
-import { getCategories, searchTools } from '@/lib/supabase'
+import Pagination from '@/components/Pagination'
+import { getCategories, getToolsPage } from '@/lib/supabase'
 
 // SSR: results depend on URL filters, rendered on every request
 export const dynamic = 'force-dynamic'
@@ -13,11 +14,13 @@ export default async function Page({ searchParams }) {
   const q = rawQuery.slice(0, 100)
   const category =
     typeof params.category === 'string' ? params.category.trim().slice(0, 80) : ''
+  const parsedPage = Number.parseInt(params.page, 10)
+  const page = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1
 
   try {
-    const [categories, tools] = await Promise.all([
+    const [categories, result] = await Promise.all([
       getCategories(),
-      searchTools({ q, category }),
+      getToolsPage({ q, category, page }),
     ])
 
     return (
@@ -26,12 +29,20 @@ export default async function Page({ searchParams }) {
         <div className="mb-6">
           <SearchBar defaultValue={q} category={category} categories={categories} />
         </div>
-        {tools.length ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {tools.map((tool) => (
-              <ToolCard key={tool.slug} tool={tool} />
-            ))}
-          </div>
+        {result.tools.length ? (
+          <>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {result.tools.map((tool) => (
+                <ToolCard key={tool.slug} tool={tool} />
+              ))}
+            </div>
+            <Pagination
+              page={result.page}
+              totalPages={result.totalPages}
+              q={q}
+              category={category}
+            />
+          </>
         ) : (
           <EmptyState title="No result" description={`Nothing matches "${q}".`} />
         )}

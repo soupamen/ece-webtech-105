@@ -8,6 +8,7 @@ if (!url || !key) {
 }
 
 const supabase = createClient(url, key)
+export const EXPLORE_PAGE_SIZE = 12
 
 function mapTool(tool) {
   return {
@@ -43,24 +44,50 @@ function escapeIlike(value) {
   return value.replace(/[\\%_]/g, '\\$&')
 }
 
-export async function searchTools({ q = '', category = '' } = {}) {
+export async function getToolsPage({ q = '', category = '', page = 1 }) {
   const search = escapeIlike(q)
+
+  const applyFilters = (query) => {
+    if (search) {
+      query = query.or(`name.ilike.%${search}%,alternative_to.ilike.%${search}%`)
+    }
+
+    if (category) {
+      query = query.eq('categories.slug', category)
+    }
+
+    return query
+  }
+
+  let countQuery = supabase
+    .from('tools')
+    .select('id, category:categories!inner(slug)', { count: 'exact', head: true })
+  countQuery = applyFilters(countQuery)
+  const countResult = await countQuery
+  if (countResult.error) throw countResult.error
+
+  const totalCount = countResult.count ?? 0
+  const totalPages = Math.max(1, Math.ceil(totalCount / EXPLORE_PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+
   let query = supabase
     .from('tools')
     .select('slug, name, alternative_to, description, category:categories!inner(slug)')
     .order('name')
+    .range(
+      (currentPage - 1) * EXPLORE_PAGE_SIZE,
+      currentPage * EXPLORE_PAGE_SIZE - 1
+    )
+  query = applyFilters(query)
+  const result = await query
+  if (result.error) throw result.error
 
-  if (search) {
-    query = query.or(`name.ilike.%${search}%,alternative_to.ilike.%${search}%`)
+  return {
+    tools: (result.data ?? []).map(mapTool),
+    page: currentPage,
+    totalPages,
+    totalCount,
   }
-
-  if (category) {
-    query = query.eq('categories.slug', category)
-  }
-
-  const { data, error } = await query
-  if (error) throw error
-  return (data ?? []).map(mapTool)
 }
 
 export async function getCategory(slug) {
