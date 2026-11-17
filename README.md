@@ -3,9 +3,8 @@
 # OpenFinder
 
 OpenFinder is the WebTech 105 team project: a directory for discovering open-source
-alternatives to software and online services. The repository currently contains the
-navigation shell and representative Next.js routes; data, authentication, and
-user-facing features are still to be implemented.
+alternatives to software and online services. The public catalogue is backed by
+Supabase and the remaining user-facing features are being introduced incrementally.
 
 ## Documentation map
 
@@ -26,16 +25,19 @@ Implemented in the prototype:
 - Shared root layout and navigation
 - Home, about, explore, category, tool, list, profile, and not-found routes
 - Tailwind CSS v4 through the PostCSS plugin
-- Route examples using SSG, ISR, and SSR
+- Supabase migrations, seed data, RLS, and server-side data access
+- Catalogue search, category filtering, and pagination
+- Server-side GitHub repository information on tool pages
+- Route rendering using SSG, ISR, and SSR
 - Responsive navigation styling and dark-mode utility classes
 
 Not implemented yet:
 
 - Supabase authentication
-- Application data access and resource management
-- Search, filtering, lists, profiles, and moderation
+- User-facing list and profile features
+- Contact form and moderation
 - Automated tests and CI
-- Production deployment
+- Full Vercel deployment verification
 
 The project plan is the source of truth for the order in which these capabilities
 should be added. Do not document planned behavior as implemented behavior.
@@ -89,9 +91,16 @@ Useful commands:
 | `npm run lint` | Run ESLint |
 | `npm run lint:fix` | Apply safe ESLint fixes |
 
-There are no environment variables required by the current prototype. Add an
-`.env.example` in the same change that introduces the first environment variable.
-Never commit credentials or service-role keys.
+The application requires these variables in `client/.env.local` for local
+development and in Vercel for each relevant environment:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+```
+
+Use only the public Supabase URL and publishable/anon key. Never commit
+credentials or service-role keys.
 
 ## Route overview
 
@@ -99,16 +108,42 @@ Never commit credentials or service-role keys.
 | --- | --- | --- |
 | `/` | Project landing page | ISR, 1 hour |
 | `/about` | Project information | Static |
-| `/explore` | Future resource browsing surface | Dynamic |
-| `/category` | Category index placeholder | Static |
-| `/category/[slug]` | Category detail placeholder | Static parameters |
-| `/tool/[slug]` | Tool detail placeholder | ISR, 60 seconds |
+| `/explore` | Search, category filtering, and pagination | Dynamic |
+| `/category` | Category index from Supabase | Static |
+| `/category/[slug]` | Category detail from Supabase | Static parameters |
+| `/tool/[slug]` | Tool detail and GitHub information | ISR, 60 seconds |
 | `/list` | Future personal lists surface | Dynamic |
 | `/profile` | Future personal profile surface | Dynamic |
 | `/not-found` | Fallback for unknown routes | Static |
 
 See the [rendering guide](documentation/RENDERING.md) for the reasoning and the
 exact source files behind each entry.
+
+### Explore parameters
+
+The `/explore` route accepts these query parameters:
+
+- `q`: searches tool names and proprietary alternatives;
+- `category`: filters by category slug;
+- `page`: selects a page of 12 results.
+
+The parameters can be combined, for example:
+`/explore?q=notion&category=productivity&page=1`.
+
+Searches and filters run in Supabase. Pagination uses an exact count and keeps
+the active search and category in the previous/next links.
+
+### Database and GitHub integration
+
+The schema is versioned in `supabase/migrations/` and seeded by
+`supabase/seed.sql`. The public `categories` and `tools` tables are readable
+through RLS. The `lists` and `list_items` tables are prepared for authenticated
+users and restrict access to each user's own lists.
+
+Tool pages call GitHub's public REST API only from server components. Responses
+are cached for 60 seconds. Timeouts, rate limits, invalid responses, and missing
+repositories hide the GitHub section without preventing the tool page from
+rendering.
 
 ## Development conventions
 
