@@ -1,24 +1,51 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
+
+const THEME_CHANGE_EVENT = 'openfinder-theme-change'
+
+function subscribeToTheme(callback) {
+  window.addEventListener(THEME_CHANGE_EVENT, callback)
+  window.addEventListener('storage', callback)
+
+  return () => {
+    window.removeEventListener(THEME_CHANGE_EVENT, callback)
+    window.removeEventListener('storage', callback)
+  }
+}
+
+function getThemeSnapshot() {
+  return document.documentElement.classList.contains('dark')
+}
+
+function getServerThemeSnapshot() {
+  return false
+}
 
 export default function ThemeToggle() {
-  const [dark, setDark] = useState(false)
+  const dark = useSyncExternalStore(
+    subscribeToTheme,
+    getThemeSnapshot,
+    getServerThemeSnapshot
+  )
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem('theme')
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
     const isDark = savedTheme ? savedTheme === 'dark' : prefersDark
-
-    document.documentElement.classList.toggle('dark', isDark)
-    setDark(isDark)
+    const root = document.documentElement
+    root.classList.toggle('dark', isDark)
+    root.classList.toggle('light', !isDark)
+    window.dispatchEvent(new Event(THEME_CHANGE_EVENT))
   }, [])
 
   const toggleTheme = () => {
     const nextDark = !dark
-    document.documentElement.classList.toggle('dark', nextDark)
+    const root = document.documentElement
+    root.classList.toggle('dark', nextDark)
+    root.classList.toggle('light', !nextDark)
     window.localStorage.setItem('theme', nextDark ? 'dark' : 'light')
-    setDark(nextDark)
+    window.dispatchEvent(new Event(THEME_CHANGE_EVENT))
   }
 
   return (

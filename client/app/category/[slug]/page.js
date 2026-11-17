@@ -3,13 +3,9 @@ import { notFound } from 'next/navigation'
 import PageHeader from '@/components/PageHeader'
 import ToolCard from '@/components/ToolCard'
 import EmptyState from '@/components/EmptyState'
-import { getCategories, getCategory, getToolsByCategory } from '@/lib/supabase'
+import { getCategory, getToolsByCategory } from '@/lib/supabase'
 
-// SSG params: one static page per category, built with generateStaticParams
-export async function generateStaticParams() {
-  const categories = await getCategories()
-  return categories.map(({ slug }) => ({ slug }))
-}
+export const dynamic = 'force-dynamic'
 
 export default async function Page({ params }) {
   const { slug } = await params

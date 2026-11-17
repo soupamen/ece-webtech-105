@@ -2,8 +2,7 @@ import PageHeader from '@/components/PageHeader'
 import CategoryCard from '@/components/CategoryCard'
 import { getCategories } from '@/lib/supabase'
 
-// SSG: categories rarely change, built once
-export const dynamic = 'force-static'
+export const dynamic = 'force-dynamic'
 
 export default async function Page() {
   const categories = await getCategories()
