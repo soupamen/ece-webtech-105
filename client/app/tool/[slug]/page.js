@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { getGithubRepository } from '@/lib/github'
 import { getTool, getTools } from '@/lib/supabase'
 
 // ISR: one static page per tool, refreshed every 60 seconds
@@ -17,6 +18,7 @@ export default async function Page({ params }) {
   const { slug } = await params
   const tool = await getTool(slug)
   if (!tool) notFound()
+  const github = await getGithubRepository(tool.githubRepo)
 
   return (
     <>
@@ -36,9 +38,17 @@ export default async function Page({ params }) {
         </div>
         <div className="flex gap-2">
           <Button disabled>Add to list</Button>
-          <Button variant="outline" disabled>
-            Website
-          </Button>
+          {tool.websiteUrl ? (
+            <Button asChild variant="outline">
+              <a href={tool.websiteUrl} target="_blank" rel="noreferrer">
+                Website
+              </a>
+            </Button>
+          ) : (
+            <Button variant="outline" disabled>
+              Website
+            </Button>
+          )}
         </div>
       </div>
       <Card>
@@ -49,6 +59,22 @@ export default async function Page({ params }) {
           The full description, license and links will appear here.
         </CardContent>
       </Card>
+      {github && (
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle>Open source info</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <p>
+              {github.stars.toLocaleString()} stars · {github.forks.toLocaleString()} forks
+            </p>
+            {github.license && <p>License: {github.license}</p>}
+            <a className="underline hover:no-underline" href={github.url} target="_blank" rel="noreferrer">
+              View repository on GitHub
+            </a>
+          </CardContent>
+        </Card>
+      )}
     </>
   )
 }
