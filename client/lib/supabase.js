@@ -126,3 +126,48 @@ export async function getTool(slug) {
   if (error) throw error
   return data ? { ...mapTool(data), categoryName: data.category.name } : null
 }
+
+export async function getLists() {
+  const { data, error } = await supabase
+    .from('lists')
+    .select('id, user_id, name, description, created_at, list_items(list_id, tool_id, added_at)')
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data
+}
+
+export async function createList({ userId, name, description = null }) {
+  const { data, error } = await supabase
+    .from('lists')
+    .insert({ user_id: userId, name, description })
+    .select('id, user_id, name, description, created_at')
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function addToolToList({ listId, toolId }) {
+  const { data, error } = await supabase
+    .from('list_items')
+    .insert({ list_id: listId, tool_id: toolId })
+    .select('list_id, tool_id, added_at')
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function removeToolFromList({ listId, toolId }) {
+  const { data, error } = await supabase
+    .from('list_items')
+    .delete()
+    .eq('list_id', listId)
+    .eq('tool_id', toolId)
+    .select('list_id, tool_id, added_at')
+    .maybeSingle()
+
+  if (error) throw error
+  return data
+}
