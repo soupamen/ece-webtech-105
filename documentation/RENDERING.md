@@ -11,7 +11,7 @@ requirements change.
 | `/` | `client/app/page.js` | Dynamic, public data cached 3,600 seconds | Renders per request; categories and tools come from cached queries |
 | `/about` | `client/app/about/page.js` | Static (`force-static`) | Content has no request-time data |
 | `/category` | `client/app/category/page.js` | Dynamic, public data cached 3,600 seconds | The page uses dynamic rendering and a cached public category query |
-| `/category/[slug]` | `client/app/category/[slug]/page.js` | Dynamic, public data cached 3,600 seconds | Category details and tools use cached public queries |
+| `/category/[slug]` | `client/app/category/[slug]/page.js` | SSG (`generateStaticParams`) + ISR, 3,600 seconds | Public content, identical for every visitor |
 | `/tool/[slug]` | `client/app/tool/[slug]/page.js` | Dynamic (reads cookies), public data cached 60 seconds | The save control depends on the signed-in user |
 | `/contact` | `client/app/contact/page.js` | Static (`force-static`) | The form submits through a client interaction |
 | `/explore` | `client/app/explore/page.js` | Dynamic | Results depend on URL search, category, and page parameters |
@@ -24,8 +24,8 @@ requirements change.
 | `/moderation` | `client/app/moderation/page.js` | Dynamic | Reads private suggestions for authorized moderators |
 | `404` | `client/app/not-found.js` | Static | The fallback has no request-time data |
 
-No route currently uses route-level ISR. Public catalogue data is cached at the
-query level instead (see below).
+`npm run build` marks `/about`, `/contact` and 404 as static (`○`), each
+category page as SSG (`●`), and every other route as dynamic (`ƒ`).
 
 ## Decision rules
 
@@ -35,6 +35,10 @@ Use static rendering when the output is the same for every visitor and does not
 need request-time data. `/about` and `/contact` export
 `dynamic = 'force-static'`; the not-found fallback has no request-time data.
 Unknown category and tool slugs keep the existing `notFound()` behavior.
+
+`/category/[slug]` uses `generateStaticParams` to pre-render one page per
+category at build time. A category added later renders on its first request and
+is then cached like the others.
 
 ### Cached data in dynamic routes
 
@@ -55,7 +59,10 @@ available.
 ### Incremental Static Regeneration (ISR)
 
 ISR (`export const revalidate = <seconds>`) fits a public page whose output is
-the same for every visitor. It has no effect on a page that reads cookies:
+the same for every visitor. `/category/[slug]` exports `revalidate = 3600`: the
+pre-rendered page is served from cache and regenerated in the background at
+most once per hour (`Cache-Control: s-maxage=3600`). It has no effect on a page
+that reads cookies:
 `/tool/[slug]` exports `revalidate = 60`, but it reads the session through
 `createSupabaseServerClient()`, so Next.js renders it per request. Its freshness
 comes from the 60-second query and GitHub caches above.
@@ -65,8 +72,8 @@ comes from the 60-second query and GitHub caches above.
 Use `dynamic = 'force-dynamic'` when a page depends on request-time state, such
 as URL filters or authenticated user data. `/explore` reads `q`, `category`, and
 `page` from the URL and performs the filtered, counted Supabase query on every
-request. The home and category routes use dynamic rendering while caching their
-public catalogue queries. Account, list, suggestion, and moderation routes use
+request. The home page and category index use dynamic rendering while caching
+their public catalogue queries. Account, list, suggestion, and moderation routes use
 cookies and user-specific Supabase access, so they must not be statically
 rendered or shared between users. Tool detail also reads the session to render
 the correct save action. The authenticated routes set `noindex` metadata where
