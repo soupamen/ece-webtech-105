@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { addToolToListAction } from '@/app/list/actions'
-import { Button } from '@/components/ui/button'
+import SubmitButton from '@/components/SubmitButton'
 
 export default function AddToolToListForm({ lists, toolSlug = '' }) {
   if (!lists.length) {
@@ -52,9 +52,9 @@ export default function AddToolToListForm({ lists, toolSlug = '' }) {
       {lists.length === 1 && (
         <input type="hidden" name="list_id" value={lists[0].id} />
       )}
-      <Button type="submit" variant="outline">
+      <SubmitButton variant="outline" pendingLabel="Saving...">
         {toolSlug ? 'Add to list' : 'Save tool'}
-      </Button>
+      </SubmitButton>
     </form>
   )
 }

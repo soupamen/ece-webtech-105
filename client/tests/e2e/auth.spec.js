@@ -73,6 +73,7 @@ test('a user can sign up and manage a personal list', async ({ page }) => {
   await page.getByRole('button', { name: 'Remove' }).click()
   await expect(page.getByText('No tools saved in this list yet.')).toBeVisible()
 
+  page.once('dialog', (dialog) => dialog.accept())
   await page.getByRole('button', { name: 'Delete list' }).click()
   await expect(page.getByText('No lists yet')).toBeVisible()
 
