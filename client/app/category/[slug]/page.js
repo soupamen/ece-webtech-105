@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import PageHeader from '@/components/PageHeader'
@@ -13,9 +14,22 @@ export async function generateStaticParams() {
   return categories.map(({ slug }) => ({ slug }))
 }
 
+// Shared by generateMetadata and Page within one request.
+const loadCategory = cache(getCategory)
+
+export async function generateMetadata({ params }) {
+  const { slug } = await params
+  const category = await loadCategory(slug)
+  if (!category) return {}
+  return {
+    title: category.name,
+    description: `Open-source alternatives in ${category.name}. ${category.description ?? ''}`.trim(),
+  }
+}
+
 export default async function Page({ params }) {
   const { slug } = await params
-  const category = await getCategory(slug)
+  const category = await loadCategory(slug)
   if (!category) notFound()
   const list = await getToolsByCategory(slug)
 
