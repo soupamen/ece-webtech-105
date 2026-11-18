@@ -17,6 +17,7 @@ function mapTool(tool) {
     alternativeTo: tool.alternative_to,
     description: tool.description,
     category: tool.category.slug,
+    categoryName: tool.category.name,
     githubRepo: tool.github_repo,
     websiteUrl: tool.website_url,
   }
@@ -35,7 +36,7 @@ export async function getCategories() {
 export async function getTools() {
   const { data, error } = await supabase
     .from('tools')
-    .select('slug, name, alternative_to, description, category:categories!inner(slug)')
+    .select('slug, name, alternative_to, description, category:categories!inner(slug, name)')
     .order('name')
 
   if (error) throw error
@@ -74,7 +75,7 @@ export async function getToolsPage({ q = '', category = '', page = 1 }) {
 
   let query = supabase
     .from('tools')
-    .select('slug, name, alternative_to, description, category:categories!inner(slug)')
+    .select('slug, name, alternative_to, description, category:categories!inner(slug, name)')
     .order('name')
     .range(
       (currentPage - 1) * EXPLORE_PAGE_SIZE,
@@ -106,7 +107,7 @@ export async function getCategory(slug) {
 export async function getToolsByCategory(slug) {
   const { data, error } = await supabase
     .from('tools')
-    .select('slug, name, alternative_to, description, category:categories!inner(slug)')
+    .select('slug, name, alternative_to, description, category:categories!inner(slug, name)')
     .eq('categories.slug', slug)
     .order('name')
 
@@ -124,7 +125,7 @@ export async function getTool(slug) {
     .maybeSingle()
 
   if (error) throw error
-  return data ? { ...mapTool(data), categoryName: data.category.name } : null
+  return data ? mapTool(data) : null
 }
 
 export async function getLists() {

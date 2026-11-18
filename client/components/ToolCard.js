@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
-export default function ToolCard({ tool }) {
+// hideCategory: on a category page every card would repeat the same label.
+export default function ToolCard({ tool, hideCategory = false }) {
   return (
     <Link
       href={`/tool/${tool.slug}`}
@@ -8,7 +9,7 @@ export default function ToolCard({ tool }) {
     >
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="font-semibold tracking-tight">{tool.name}</h2>
-        <span className="truncate font-mono text-xs text-muted-foreground">{tool.category}</span>
+        {!hideCategory && <span className="truncate text-xs text-muted-foreground">{tool.categoryName}</span>}
       </div>
       <p className="line-clamp-2 text-sm text-muted-foreground">{tool.description}</p>
       <div className="mt-auto flex items-center justify-between gap-3 border-t pt-3 text-xs">

@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import PageHeader from '@/components/PageHeader'
 import ToolCard from '@/components/ToolCard'
 import EmptyState from '@/components/EmptyState'
+import { exploreHref } from '@/components/Pagination'
+import { Button } from '@/components/ui/button'
 import { getCategories, getCategory, getToolsByCategory } from '@/lib/supabase'
 
 // SSG params: one static page per category, built with generateStaticParams
@@ -19,18 +21,50 @@ export default async function Page({ params }) {
 
   return (
     <>
-      <p className="mb-2 text-sm text-muted-foreground">
-        <Link href="/category" className="hover:underline">Categories</Link> / {category.name}
-      </p>
-      <PageHeader title={category.name} description={category.description} />
+      {/* Same breadcrumb markup as app/tool/[slug]/page.js. */}
+      <nav aria-label="Breadcrumb" className="mb-3 text-sm text-muted-foreground">
+        <ol className="flex flex-wrap items-center gap-1.5">
+          <li>
+            <Link
+              href="/category"
+              className="rounded-sm transition-colors outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            >
+              Categories
+            </Link>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li aria-current="page" className="text-foreground">
+            {category.name}
+          </li>
+        </ol>
+      </nav>
+      <PageHeader title={category.name} description={category.description}>
+        {list.length > 0 && (
+          <Button asChild variant="outline" className="self-start sm:self-auto">
+            <Link href={exploreHref({ category: slug })}>Search in {category.name}</Link>
+          </Button>
+        )}
+      </PageHeader>
       {list.length ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {list.map((t) => (
-            <ToolCard key={t.slug} tool={t} />
-          ))}
-        </div>
+        <>
+          <p className="mb-4 text-sm text-muted-foreground">
+            <span className="font-mono text-foreground tabular-nums">{list.length}</span>{' '}
+            {list.length === 1 ? 'tool' : 'tools'}
+          </p>
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {list.map((t) => (
+              <li key={t.slug}>
+                <ToolCard tool={t} hideCategory />
+              </li>
+            ))}
+          </ul>
+        </>
       ) : (
-        <EmptyState title="No tool yet" description="This category is empty." />
+        <EmptyState title={`No tools in ${category.name} yet`} description="Browse another category in the meantime.">
+          <Button asChild variant="outline">
+            <Link href="/category">All categories</Link>
+          </Button>
+        </EmptyState>
       )}
     </>
   )
