@@ -1,75 +1,91 @@
-# Project Name: [Insert Name Here]
+# Project Name: OpenFinder
 
 - **Team Members:**
-  - [Name 1]
-  - [Name 2]
-  - [Name 3]
-- **Deployed URL:** [https://your-project.vercel.app]
+  - Yannis De Saint Loubert
+  - Lilian Bulteau
+  - Arsène Léonard Barton--von Saurma
+- **Deployed URL:** [https://openfinder-ivory.vercel.app]
 
 ---
 
 ## 1. Concept & User Experience
 
+OpenFinder is a directory of open-source alternatives to popular proprietary
+software. Visitors search or browse by category, open a tool page enriched with
+live GitHub data, and, once signed in, save tools to personal lists or suggest
+new tools for moderators to review.
+
 ### Key Features (UI/UX)
 
-*Provide a few screenshots or a short animated GIF demonstrating some of the key features of your application.*
+**Home page**: search bar, category shortcuts and featured tools.
 
-[INSERT SCREENSHOTS/GIFS HERE]
+![OpenFinder home page](documentation/screenshots/home.png)
 
 ---
 
 ## 2. Full-Stack Functionality
 
-*Briefly describe how you implemented the core requirements. Keep it concise (1-2 sentences per item).*
-
 ### Authentication
 
-- [ ] Sign-up implemented
-- [ ] Sign-in implemented
-- [ ] Sign-out implemented
-- [ ] The UI updates based on user state
+- [x] Sign-up implemented
+- [x] Sign-in implemented
+- [x] Sign-out implemented
+- [x] The UI updates based on user state
 
-**Notes**: [Your notes here (optional)]
+**Notes**: Supabase email/password auth via Server Actions
+(`client/app/auth/actions.js`). The profile page shows the account or sign-in
+links, and private pages redirect guests to sign-in.
 
-**Self-Evaluation:**: [Your self-evaluation here]
+**Self-Evaluation:**: Complete flow with validation, clear error messages and
+safe redirects.
 
 ### CRUD Operations
 
-- **Main Resource:** [e.g., "Recipes"]
-- [ ] Create
-- [ ] Read
-- [ ] Update
-- [ ] Delete
+- **Main Resource:** Personal lists of tools (`lists` and `list_items`)
+- [x] Create
+- [x] Read
+- [x] Update
+- [x] Delete
 
-**Notes**: [Your notes here (optional)]
+**Notes**: Server Actions in `client/app/list/actions.js` create, rename and
+delete lists, and add or remove tools in them.
 
-**Self-Evaluation:**: [Your self-evaluation here]
+**Self-Evaluation:**: Full CRUD with input validation on the server and RLS as
+the final check.
 
 ### Data Relationships
 
-- **Tables Involved:** [e.g., "Users" and "Posts"]
-- [ ] Relationship implemented
+- **Tables Involved:** `categories` → `tools`, `auth.users` → `lists`,
+  `lists` ↔ `tools` through `list_items`, `auth.users` → `tool_submissions`
+- [x] Relationship implemented
 
-**Notes**: [Your notes here (optional)]
-**Self-Evaluation:**: [Your self-evaluation here]
+**Notes**: `tools` belongs to a category; `list_items` joins lists and tools
+(many-to-many).
+
+**Self-Evaluation:**: One-to-many and many-to-many relationships, both used in
+the UI (category pages, list contents).
 
 ### Search & Filtering
 
-- [ ] Search implemented
-- [ ] Filter implemented, available options: [e.g., "by category", "by date"]
+- [x] Search implemented
+- [x] Filter implemented, available options: by category
 
-**Notes**: [Your notes here (optional)]
+**Notes**: `/explore` searches by tool name or replaced software, filters by
+category and paginates; all parameters live in the URL.
 
-**Self-Evaluation:**: [Your self-evaluation here]
+**Self-Evaluation:**: Search, filter and pagination combined, rendered on the
+server, with loading, empty and error states.
 
 ### External API Integration
 
-- **API Used:** [Name and URL of the API]
-- **Data fetched:** [What data are you getting?]
+- **API Used:** GitHub REST API (https://api.github.com/repos/{owner}/{repo})
+- **Data fetched:** Stars, forks, license, last update date and repository link
 
-**Notes**: [Your notes here (optional)]
+**Notes**: Fetched server-side with a 60-second cache; if GitHub fails, the
+section is hidden and the page still renders.
 
-**Self-Evaluation:**: [Your self-evaluation here]
+**Self-Evaluation:**: Robust integration: cached, validated and fault tolerant,
+covered by unit tests.
 
 ---
 
@@ -79,11 +95,20 @@
 
 *Provide a screenshot of your Supabase Table Editor or a text description of your tables and relationships.*
 
-[INSERT SCHEMA SCREENSHOT HERE]
+| Table | Main columns | Relationships |
+| --- | --- | --- |
+| `categories` | `id`, `slug`, `name`, `description` | Has many `tools` |
+| `tools` | `id`, `slug`, `name`, `alternative_to`, `description`, `github_repo`, `website_url` | `category_id` → `categories` |
+| `lists` | `id`, `user_id`, `name`, `description` | `user_id` → `auth.users` |
+| `list_items` | `list_id`, `tool_id` | Joins `lists` and `tools` |
+| `tool_submissions` | `id`, `user_id`, `category_id`, `name`, `alternative_to`, `description`, `github_repo`, `website_url`, `status`, `moderator_note` | `user_id` → `auth.users`, `category_id` → `categories` |
+| `contacts` | `id`, `name`, `email`, `message` | None |
 
-**Notes**: [Your notes here (optional)]
+**Notes**: The schema is versioned in `supabase/migrations/` and seeded by
+`supabase/seed.sql`.
 
-**Self-Evaluation:**: [Your self-evaluation here]
+**Self-Evaluation:**: Normalized schema with constraints, versioned migrations
+and reproducible seed data.
 
 ### Row Level Security (RLS)
 
@@ -91,19 +116,23 @@
 
 [INSERT RLS DASHBOARD SCREENSHOT HERE]
 
-**Notes**: [Your notes here (optional)]
+**Notes**: RLS is on for every table: the catalogue is public read-only, and
+users can only access their own lists and suggestions. Policies are tested with
+pgTAP in `supabase/tests/`.
 
-**Self-Evaluation:**: [Your self-evaluation here]
+**Self-Evaluation:**: Policies cover every table and are tested, not only
+described.
 
 ### Server vs. Client Components
 
-*Identify one significant Server Component and one Client Component in your app.*
+**Server Component:** `client/app/explore/page.js`
+    - *Why?* Reads the URL parameters and queries Supabase on the server, so the
+      results are in the HTML (SEO, no client fetch) and no database code ships
+      to the browser.
 
-**Server Component:** [File path, e.g., `src/app/dashboard/page.tsx`]
-    - *Why?* [e.g., "Directly fetches data from Supabase to ensure SEO and performance."]
-
-**Client Component:** [File path, e.g., `src/components/LikeButton.tsx`]
-    - *Why?* [e.g., "Needs access to `onClick` handlers and React state."]
+**Client Component:** `client/components/layout/NavLinks.js`
+    - *Why?* Needs `usePathname()` to highlight the active link and React state
+      for the mobile menu (open/close, Escape key).
 
 ---
 
@@ -115,28 +144,28 @@
 
 *What is the technically most difficult or most polished feature you built?*
 
-[Name 1]: [Your answer here]
+Yannis De Saint Loubert: [Your answer here]
 
-[Name 2]: [Your answer here]
+Lilian Bulteau: [Your answer here]
 
-[Name 3]: [Your answer here]
+Arsène Léonard Barton--von Saurma: [Your answer here]
 
 ### What Would You Improve?
 
 *If you had more time, what would you add or improve in your project?*
 
-[Name 1]: [Your answer here]
+Yannis De Saint Loubert: [Your answer here]
 
-[Name 2]: [Your answer here]
+Lilian Bulteau: [Your answer here]
 
-[Name 3]: [Your answer here]
+Arsène Léonard Barton--von Saurma: [Your answer here]
 
 ### Course Feedback (Bonus)
 
 *What did you enjoy about this course? What could be improved for next year?*
 
-[Name 1]: [Your answer here]
+Yannis De Saint Loubert: [Your answer here]
 
-[Name 2]: [Your answer here]
+Lilian Bulteau: [Your answer here]
 
-[Name 3]: [Your answer here]
+Arsène Léonard Barton--von Saurma: [Your answer here]
