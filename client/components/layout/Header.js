@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import NavLinks from './NavLinks'
 import ThemeToggle from './ThemeToggle'
+import AuthStatus from './AuthStatus'
 
 export default function Header() {
   return (
@@ -10,8 +11,9 @@ export default function Header() {
           WebTech 105
         </Link>
         <div className="flex items-center gap-4">
-          <NavLinks />
+          <AuthStatus />
           <ThemeToggle />
+          <NavLinks />
         </div>
       </div>
     </header>
