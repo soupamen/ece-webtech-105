@@ -8,6 +8,7 @@ const sans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
 const mono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' })
 
 export const metadata = {
+  metadataBase,
   title: { default: 'WebTech 105', template: '%s · WebTech 105' },
   description: 'ECE WebTech project — team 105',
 }
