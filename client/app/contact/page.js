@@ -7,7 +7,7 @@ export const dynamic = 'force-static'
 export default function Page() {
   return (
     <>
-      <PageHeader title="Contact" description="Suggest a tool or send us a message." />
+      <PageHeader title="Contact" description="Send us a message." />
       <ContactForm />
     </>
   )
