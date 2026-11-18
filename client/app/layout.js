@@ -8,8 +8,9 @@ const sans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
 const mono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' })
 
 export const metadata = {
-  title: { default: 'WebTech 105', template: '%s · WebTech 105' },
-  description: 'ECE WebTech project — team 105',
+  metadataBase,
+  title: { default: 'OpenFinder', template: '%s · OpenFinder' },
+  description: 'Find open-source alternatives to the software you already use.',
 }
 
 // Runs before paint: saved choice, else system preference. Avoids a light flash in dark mode.
