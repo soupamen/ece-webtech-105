@@ -7,6 +7,8 @@ export default function ThemeToggle() {
 
   // The inline script in layout.js already set the class before paint; just mirror it.
   useEffect(() => {
+    // Reading the DOM in useState would mismatch the server render, so sync once after mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDark(document.documentElement.classList.contains('dark'))
   }, [])
 
