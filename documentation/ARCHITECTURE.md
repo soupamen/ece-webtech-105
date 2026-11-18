@@ -46,7 +46,7 @@ client/app/
   about/page.js             # Static project page
   explore/                  # Search, filter and pagination (own loading/error)
   category/page.js          # Category index with cached data
-  category/[slug]/page.js   # Category detail with cached data
+  category/[slug]/page.js   # Category detail (SSG + ISR, 1 hour)
   tool/[slug]/page.js       # Session-aware tool detail with cached public data
   contact/page.js           # Public contact form
   list/page.js              # Authenticated personal-list management
