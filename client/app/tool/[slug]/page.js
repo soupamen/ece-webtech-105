@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
@@ -14,67 +15,107 @@ export async function generateStaticParams() {
   return tools.map(({ slug }) => ({ slug }))
 }
 
+// Shared by generateMetadata and Page within one request.
+const loadTool = cache(getTool)
+
+export async function generateMetadata({ params }) {
+  const { slug } = await params
+  const tool = await loadTool(slug)
+  if (!tool) return {}
+  return {
+    title: tool.name,
+    description: `${tool.name} is an open-source alternative to ${tool.alternativeTo}. ${tool.description ?? ''}`.trim(),
+  }
+}
+
 export default async function Page({ params }) {
   const { slug } = await params
-  const tool = await getTool(slug)
+  const tool = await loadTool(slug)
   if (!tool) notFound()
   const github = await getGithubRepository(tool.githubRepo)
 
+  // 'en': the UI is English; the server locale would otherwise pick the separator (79 125 vs 79,125).
+  const stats = github
+    ? [
+        ['Stars', github.stars.toLocaleString('en')],
+        ['Forks', github.forks.toLocaleString('en')],
+        ['License', github.license],
+      ].filter(([, value]) => value)
+    : []
+
   return (
     <>
-      <p className="mb-2 text-sm text-muted-foreground">
-        <Link href={`/category/${tool.category}`} className="hover:underline">
-          {tool.categoryName}
-        </Link>{' '}
-        / {tool.name}
-      </p>
+      <nav aria-label="Breadcrumb" className="mb-3 text-sm text-muted-foreground">
+        <ol className="flex flex-wrap items-center gap-1.5">
+          <li>
+            <Link
+              href={`/category/${tool.category}`}
+              className="rounded-sm transition-colors outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            >
+              {tool.categoryName}
+            </Link>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li aria-current="page" className="text-foreground">
+            {tool.name}
+          </li>
+        </ol>
+      </nav>
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{tool.name}</h1>
-          <p className="mt-2 text-muted-foreground">{tool.description}</p>
+        <div className="min-w-0">
+          <h1 className="wt-title">{tool.name}</h1>
+          <p className="mt-3 max-w-prose text-pretty text-muted-foreground">{tool.description}</p>
           <Badge variant="secondary" className="mt-3">
             Alternative to {tool.alternativeTo}
           </Badge>
         </div>
-        <div className="flex gap-2">
+        <div className="flex shrink-0 gap-2">
           <Button disabled>Add to list</Button>
-          {tool.websiteUrl ? (
+          {tool.websiteUrl && (
             <Button asChild variant="outline">
               <a href={tool.websiteUrl} target="_blank" rel="noreferrer">
-                Website
+                Website<span className="sr-only"> (opens in a new tab)</span>
               </a>
-            </Button>
-          ) : (
-            <Button variant="outline" disabled>
-              Website
             </Button>
           )}
         </div>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>About</CardTitle>
-        </CardHeader>
-        <CardContent className="text-muted-foreground">
-          The full description, license and links will appear here.
-        </CardContent>
-      </Card>
-      {github && (
-        <Card className="mt-4">
+      {/* Side by side on desktop; About takes the full width when GitHub data is missing. */}
+      <div className="flex flex-col gap-4 md:flex-row">
+        <Card className="min-w-0 md:flex-[2]">
           <CardHeader>
-            <CardTitle>Open source info</CardTitle>
+            <CardTitle>About</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm text-muted-foreground">
-            <p>
-              {github.stars.toLocaleString()} stars · {github.forks.toLocaleString()} forks
-            </p>
-            {github.license && <p>License: {github.license}</p>}
-            <a className="underline hover:no-underline" href={github.url} target="_blank" rel="noreferrer">
-              View repository on GitHub
-            </a>
+          <CardContent className="text-muted-foreground">
+            The full description, license and links will appear here.
           </CardContent>
         </Card>
-      )}
+        {github && (
+          <Card className="min-w-0 md:flex-1">
+            <CardHeader>
+              <CardTitle>Open source info</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-1 flex-col gap-4 text-sm">
+              <dl className="divide-y">
+                {stats.map(([label, value]) => (
+                  <div key={label} className="flex justify-between gap-4 py-2 first:pt-0">
+                    <dt className="text-muted-foreground">{label}</dt>
+                    <dd className="font-medium tabular-nums">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+              <a
+                href={github.url}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-auto w-fit rounded-sm text-muted-foreground underline underline-offset-4 transition-colors outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              >
+                View repository on GitHub<span className="sr-only"> (opens in a new tab)</span>
+              </a>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </>
   )
 }

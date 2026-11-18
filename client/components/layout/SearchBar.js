@@ -1,8 +1,10 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
 export default function SearchBar() {
+  const router = useRouter()
   const [expanded, setExpanded] = useState(false)
   const [query, setQuery] = useState('')
   const inputRef = useRef(null)
@@ -25,12 +27,21 @@ export default function SearchBar() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    const q = query.trim()
+    if (q) router.push(`/explore?q=${encodeURIComponent(q)}`)
+  }
+
   return (
-    <div
-      className={`flex shrink-0 items-center overflow-hidden rounded-full border transition-[width,colors] duration-300 ${
+    <form
+      role="search"
+      onSubmit={handleSubmit}
+      // focus-within ring: overflow-hidden would clip the inner button's own outline.
+      className={`flex shrink-0 items-center overflow-hidden rounded-full border transition-[width,colors] duration-300 focus-within:ring-[3px] focus-within:ring-ring/50 ${
         expanded
-          ? 'w-52 border-gray-400 bg-white sm:w-64 dark:border-gray-500 dark:bg-gray-900'
-          : 'w-20 border-gray-200 dark:border-gray-700'
+          ? 'w-52 border-ring bg-background sm:w-64'
+          : 'w-20 border-border'
       }`}
     >
       <button
@@ -38,9 +49,15 @@ export default function SearchBar() {
         onClick={() => setExpanded((isExpanded) => !isExpanded)}
         aria-label={expanded ? 'Close search' : 'Open search'}
         aria-expanded={expanded}
-        className="flex h-9 w-20 shrink-0 items-center justify-center rounded-full text-sm text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+        className={`flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full text-sm text-muted-foreground transition outline-none hover:bg-accent hover:text-foreground ${
+          expanded ? 'w-9' : 'w-20'
+        }`}
       >
-        {!expanded && <span aria-hidden="true">Search...</span>}
+        <svg viewBox="0 0 16 16" aria-hidden="true" className="size-3.5 shrink-0">
+          <circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M10.5 10.5L14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+        {!expanded && <span aria-hidden="true">Search</span>}
       </button>
 
       <input
@@ -51,7 +68,8 @@ export default function SearchBar() {
         placeholder="Search..."
         aria-label="Search"
         tabIndex={expanded ? 0 : -1}
-        className="min-w-0 flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-gray-400"
+        // border-0/focus:ring-0 undo @tailwindcss/forms; the pill draws the focus ring and our own clear button.
+        className="min-w-0 flex-1 border-0 bg-transparent px-1 py-0 text-sm outline-none placeholder:text-muted-foreground focus:ring-0 [&::-webkit-search-cancel-button]:hidden"
       />
 
       {expanded && query && (
@@ -59,11 +77,13 @@ export default function SearchBar() {
           type="button"
           onClick={() => setQuery('')}
           aria-label="Clear search"
-          className="mr-2 text-gray-400 transition hover:text-gray-700 dark:hover:text-gray-200"
+          className="mr-1.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full text-muted-foreground transition outline-none hover:bg-accent hover:text-foreground"
         >
-          ×
+          <svg viewBox="0 0 16 16" aria-hidden="true" className="size-3.5">
+            <path d="M4.5 4.5l7 7m0-7l-7 7" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
         </button>
       )}
-    </div>
+    </form>
   )
 }

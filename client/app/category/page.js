@@ -5,6 +5,11 @@ import { getCategories } from '@/lib/supabase'
 // SSG: categories rarely change, built once
 export const dynamic = 'force-static'
 
+export const metadata = {
+  title: 'Categories',
+  description: 'Browse open-source alternatives by type of software.',
+}
+
 export default async function Page() {
   const categories = await getCategories()
 

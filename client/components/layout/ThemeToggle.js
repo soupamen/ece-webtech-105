@@ -5,19 +5,19 @@ import { useEffect, useState } from 'react'
 export default function ThemeToggle() {
   const [dark, setDark] = useState(false)
 
+  // The inline script in layout.js already set the class before paint; just mirror it.
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem('theme')
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    const isDark = savedTheme ? savedTheme === 'dark' : prefersDark
-
-    document.documentElement.classList.toggle('dark', isDark)
-    setDark(isDark)
+    // Reading the DOM in useState would mismatch the server render, so sync once after mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDark(document.documentElement.classList.contains('dark'))
   }, [])
 
   const toggleTheme = () => {
     const nextDark = !dark
     document.documentElement.classList.toggle('dark', nextDark)
-    window.localStorage.setItem('theme', nextDark ? 'dark' : 'light')
+    try {
+      window.localStorage.setItem('theme', nextDark ? 'dark' : 'light')
+    } catch {}
     setDark(nextDark)
   }
 
@@ -27,9 +27,18 @@ export default function ThemeToggle() {
       onClick={toggleTheme}
       aria-label={dark ? 'Activate light theme' : 'Activate dark theme'}
       title={dark ? 'Light theme' : 'Dark theme'}
-      className="rounded-full border border-gray-200 px-3 py-1.5 text-sm transition hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800"
+      className="inline-flex size-10 items-center justify-center rounded-md text-muted-foreground transition-colors outline-none hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
     >
-      {dark ? '☀️' : '🌙'}
+      <svg viewBox="0 0 20 20" aria-hidden="true" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        {dark ? (
+          <>
+            <circle cx="10" cy="10" r="3.5" />
+            <path d="M10 2v1.5M10 16.5V18M2 10h1.5M16.5 10H18M4.3 4.3l1.1 1.1M14.6 14.6l1.1 1.1M4.3 15.7l1.1-1.1M14.6 5.4l1.1-1.1" />
+          </>
+        ) : (
+          <path d="M16 12.5A6.5 6.5 0 0 1 7.5 4a6.5 6.5 0 1 0 8.5 8.5Z" />
+        )}
+      </svg>
     </button>
   )
 }
