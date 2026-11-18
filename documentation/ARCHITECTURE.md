@@ -8,8 +8,9 @@ alternatives. Pages own route composition, data access is centralized in
 small Client Components. The schema is versioned in `supabase/migrations/` and
 populated by `supabase/seed.sql`.
 
-The application supports a public searchable catalogue, Supabase email
-authentication, private user lists, tool suggestions, and moderator review.
+The application supports a public searchable catalogue, a public contact form,
+Supabase email authentication, private user lists, tool suggestions, and
+moderator review.
 
 ## Runtime shape
 
@@ -44,7 +45,8 @@ client/app/
   explore/page.js           # Dynamic exploration placeholder
   category/page.js          # Static category index
   category/[slug]/page.js   # Generated category detail
-  tool/[slug]/page.js       # Incrementally regenerated tool detail
+  tool/[slug]/page.js       # Session-aware tool detail with cached public data
+  contact/page.js           # Public contact form
   list/page.js              # Authenticated personal-list management
   profile/page.js           # Account state and sign-out
   auth/                     # Email authentication and confirmation callback
@@ -54,6 +56,7 @@ client/app/
 client/components/
   layout/Header.js          # Sticky header and brand link
   layout/NavLinks.js        # Active route navigation (Client Component)
+  ContactForm.js            # Validated contact form (Client Component)
   lists/                    # Interactive list controls
   auth/                     # Shared authentication messages
 client/lib/
@@ -126,6 +129,9 @@ The directory data is split into two public tables:
 
 Both catalogue tables are readable by anonymous and authenticated users. Writes
 are not exposed through their policies.
+
+Contacts can be inserted by anonymous or authenticated visitors. RLS exposes no
+read policy, so messages cannot be queried through the public API.
 
 Personal lists are available to authenticated users:
 

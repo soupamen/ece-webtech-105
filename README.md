@@ -2,9 +2,10 @@
 
 # OpenFinder
 
-OpenFinder is the WebTech 105 team project: a directory for discovering open-source
-alternatives to software and online services. The public catalogue is backed by
-Supabase and the remaining user-facing features are being introduced incrementally.
+OpenFinder is the WebTech 105 team project: a directory for discovering
+open-source alternatives to software and online services. Its public catalogue,
+contact form, accounts, personal lists, and moderated tool suggestions use
+Supabase.
 
 ## Documentation map
 
@@ -24,11 +25,12 @@ Implemented in the prototype:
 
 - Next.js 16 App Router with React 19
 - Shared root layout and navigation
-- Home, about, explore, category, tool, list, profile, and not-found routes
+- Home, about, contact, explore, category, tool, list, profile, and not-found routes
 - Tailwind CSS v4 through the PostCSS plugin
 - Supabase migrations, seed data, RLS, and server-side data access
 - Catalogue search, category filtering, and pagination
 - Server-side GitHub repository information on tool pages
+- Public contact form with validation and insert-only access
 - Supabase email authentication and private personal lists
 - Authenticated tool suggestions and a moderator review queue
 - Unit, browser, and database RLS tests with a GitHub Actions workflow
@@ -45,17 +47,15 @@ Not implemented yet:
 The [project plan](documentation/PROJECT_PLAN.md) tracks the remaining delivery
 work. Do not document planned behavior as implemented behavior.
 
-### Next.js security upgrade
-
-The current `main` uses Next.js 16.4.5. The earlier `security/next-upgrade`
-branch was an isolated test of 16.4.3 from an older base; it is not needed to
-use or integrate the update on `main`.
+Keep the dependency lockfile's tested Next.js patch version current and run the
+production build before deployment.
 
 ## Prerequisites
 
-- Node.js 26.x, or the version selected by the team for the current milestone
+- Node.js 24 or newer (CI currently uses Node.js 26)
 - npm 10+
 - Git
+- Docker Engine or Docker Desktop
 
 Check the installed versions before starting:
 
@@ -69,13 +69,19 @@ npm --version
 ```bash
 git clone https://github.com/soupamen/ece-webtech-105.git
 cd ece-webtech-105
-cd client
 npm ci
-npm run dev
+npm ci --prefix client
+npx supabase start
 ```
 
-Open <http://localhost:3000>. The development server reloads when application
-files change. Stop it with `Ctrl+C`.
+Copy `client/.env.example` to `client/.env.local`. Set the local API URL and
+publishable key from `npx supabase status -o env`, and set
+`NEXT_PUBLIC_SITE_URL=http://localhost:3000`. Use only the public API URL and
+publishable/anon key; never put the service-role key in the client environment.
+
+Start the app with `npm --prefix client run dev`, then open
+<http://localhost:3000>. The development server reloads when application files
+change. Stop it with `Ctrl+C`.
 
 Useful commands from the repository root:
 
@@ -117,7 +123,8 @@ starts Supabase and enables these journeys automatically.
 | `/explore` | Search, category filtering, and pagination | Dynamic |
 | `/category` | Category index from Supabase | Static |
 | `/category/[slug]` | Category detail from Supabase | Static parameters |
-| `/tool/[slug]` | Tool detail and GitHub information | ISR, 60 seconds |
+| `/tool/[slug]` | Tool detail, GitHub data, and session-specific save controls | Dynamic; public data cached for 60 seconds |
+| `/contact` | Public contact and suggestion form | Static shell, interactive form |
 | `/list` | Authenticated personal lists and saved tools | Dynamic |
 | `/profile` | Account state and sign-out | Dynamic |
 | `/auth/login` | Email and password sign-in | Dynamic |
@@ -150,6 +157,7 @@ The schema is versioned in `supabase/migrations/` and seeded by
 `supabase/seed.sql`. The public `categories` and `tools` tables are readable
 through RLS. The `lists` and `list_items` tables restrict access to each user's
 own lists.
+The `contacts` table accepts inserts but has no public read policy.
 Tool suggestions are private to their submitter and moderators until an
 authorized moderator reviews them. Moderator access is based on the trusted
 Supabase `app_metadata.role` claim; ordinary user metadata cannot grant this

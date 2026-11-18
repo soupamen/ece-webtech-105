@@ -12,7 +12,8 @@ requirements change.
 | `/about` | `client/app/about/page.js` | Static | Content has no request-time data |
 | `/category` | `client/app/category/page.js` | Static | Category index is read from Supabase at build time |
 | `/category/[slug]` | `client/app/category/[slug]/page.js` | Static parameters | Known category pages are generated from Supabase data |
-| `/tool/[slug]` | `client/app/tool/[slug]/page.js` | ISR, 60 seconds | Public tool details and optional GitHub data are cacheable |
+| `/tool/[slug]` | `client/app/tool/[slug]/page.js` | Dynamic, public data cached 60 seconds | The save control depends on the signed-in user |
+| `/contact` | `client/app/contact/page.js` | Static shell | The route is public; the form submits through a client interaction |
 | `/explore` | `client/app/explore/page.js` | Dynamic | Results depend on URL search, category, and page parameters |
 | `/list` | `client/app/list/page.js` | Dynamic | Lists contain user-specific data |
 | `/profile` | `client/app/profile/page.js` | Dynamic | Account state depends on the signed-in user |
@@ -58,9 +59,10 @@ as URL filters or authenticated user data. `/explore` reads `q`, `category`, and
 `page` from the URL and performs the filtered, counted Supabase query on every
 request. Account, list, suggestion, and moderation routes use cookies and
 user-specific Supabase access, so they must not be statically rendered or
-shared between users. The authenticated routes set `noindex` metadata where
-appropriate. Do not use dynamic rendering to bypass a data or cache bug without
-documenting the reason.
+shared between users. Tool detail also reads the session to render the correct
+save action; its public catalogue and GitHub data remain cached. The
+authenticated routes set `noindex` metadata where appropriate. Do not use
+dynamic rendering to bypass a data or cache bug without documenting the reason.
 
 ### Client Components (CSR)
 
