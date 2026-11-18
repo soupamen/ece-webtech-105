@@ -8,10 +8,18 @@ import { exploreHref } from '@/components/Pagination'
 import { Button } from '@/components/ui/button'
 import { getCategories, getCategory, getToolsByCategory } from '@/lib/supabase'
 
-// SSG params: one static page per category, built with generateStaticParams
-export async function generateStaticParams() {
-  const categories = await getCategories()
-  return categories.map(({ slug }) => ({ slug }))
+export const dynamic = 'force-dynamic'
+
+export async function generateMetadata({ params }) {
+  const { slug } = await params
+  const category = await getCategory(slug)
+
+  return createPageMetadata({
+    title: category?.name ?? 'Category not found',
+    description:
+      category?.description ?? 'Browse open-source alternatives by category.',
+    path: `/category/${slug}`,
+  })
 }
 
 // Shared by generateMetadata and Page within one request.
