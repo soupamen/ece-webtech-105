@@ -15,7 +15,7 @@ Supabase and the remaining user-facing features are being introduced incremental
 | [Project plan](documentation/PROJECT_PLAN.md) | Current scope, milestones, and definition of done |
 | [Course requirements](documentation/PROJECT_INSTRUCTIONS.md) | Technical and presentation requirements |
 | [Git branch cheatsheet](documentation/.cheatsheet-git-branches.md) | Common branch and collaboration commands |
-| [Evaluation template](documentation/PROJECT.md) | Official self-evaluation; this file is maintained separately |
+| [Evaluation template](PROJECT.md) | Official self-evaluation; this file is maintained separately |
 
 ## Current status
 
@@ -28,6 +28,7 @@ Implemented in the prototype:
 - Supabase migrations, seed data, RLS, and server-side data access
 - Catalogue search, category filtering, and pagination
 - Server-side GitHub repository information on tool pages
+- ESLint and unit tests
 - Route rendering using SSG, ISR, and SSR
 - Responsive navigation styling and dark-mode utility classes
 
@@ -36,18 +37,15 @@ Not implemented yet:
 - Supabase authentication
 - User-facing list and profile features
 - Contact form and moderation
-- Automated tests and CI
+- GitHub Actions CI
 - Full Vercel deployment verification
 
 The project plan is the source of truth for the order in which these capabilities
 should be added. Do not document planned behavior as implemented behavior.
 
-Known setup limitations:
-
-- The `lint` script exists, but ESLint is not yet included in `package.json`; the
-  foundation milestone must add and configure it.
-- `npm audit` currently reports two moderate vulnerabilities through `nodemon`
-  and `minimatch`.
+The production build can be created without a running Supabase instance. Pages
+that query the catalogue still require valid Supabase environment variables at
+runtime.
 
 ### Next.js security upgrade
 
@@ -60,6 +58,7 @@ use or integrate the update on `main`.
 - Node.js 26.x, or the version selected by the team for the current milestone
 - npm 10+
 - Git
+- Docker Engine or Docker Desktop for the local Supabase database
 
 Check the installed versions before starting:
 
@@ -73,23 +72,29 @@ npm --version
 ```bash
 git clone https://github.com/soupamen/ece-webtech-105.git
 cd ece-webtech-105
-cd client
 npm ci
-npm run dev
+npm ci --prefix client
+npx supabase start
 ```
 
-Open <http://localhost:3000>. The development server reloads when application
-files change. Stop it with `Ctrl+C`.
+Copy `client/.env.example` to `client/.env.local`, then fill in the local
+Supabase URL and publishable key shown by `npx supabase status -o env`. Use only
+the public `API_URL` and `PUBLISHABLE_KEY` (or `ANON_KEY`) values; never copy
+`SERVICE_ROLE_KEY` into the client environment. Start the app with
+`npm --prefix client run dev`, then open <http://localhost:3000>. Stop it with
+`Ctrl+C`.
 
-Useful commands:
+Useful commands from the repository root:
 
 | Command | Purpose |
 | --- | --- |
-| `npm run dev` | Start the development server |
-| `npm run build` | Create a production build |
-| `npm run start` | Serve the production build |
-| `npm run lint` | Run ESLint |
-| `npm run lint:fix` | Apply safe ESLint fixes |
+| `npm --prefix client run dev` | Start the development server |
+| `npm --prefix client run build` | Create a production build |
+| `npm --prefix client run start` | Serve the production build |
+| `npm --prefix client run lint` | Run ESLint |
+| `npm --prefix client test` | Run unit tests |
+| `npm audit --prefix client` | Check client dependencies |
+| `npx supabase test db` | Run database authorization tests |
 
 The application requires these variables in `client/.env.local` for local
 development and in Vercel for each relevant environment:
@@ -97,10 +102,16 @@ development and in Vercel for each relevant environment:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
 Use only the public Supabase URL and publishable/anon key. Never commit
 credentials or service-role keys.
+
+On Linux, Docker access is controlled by the Docker socket. Do not make the
+socket world-writable; ask an administrator to configure access for the
+development account. Membership in the `docker` group grants root-equivalent
+privileges.
 
 ## Route overview
 
