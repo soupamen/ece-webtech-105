@@ -80,7 +80,7 @@ export default async function ModerationPage({ searchParams }) {
                         href={`https://github.com/${submission.github_repo}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="underline underline-offset-4"
+                        className="underline underline-offset-4 rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
                       >
                         {submission.github_repo}
                       </a>
@@ -90,7 +90,7 @@ export default async function ModerationPage({ searchParams }) {
                         href={submission.website_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="underline underline-offset-4"
+                        className="underline underline-offset-4 rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
                       >
                         Official website
                       </a>
