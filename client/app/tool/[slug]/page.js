@@ -101,8 +101,38 @@ export default async function Page({ params }) {
           <CardHeader>
             <CardTitle>About</CardTitle>
           </CardHeader>
-          <CardContent className="text-muted-foreground">
-            The full description, license and links will appear here.
+          <CardContent className="text-sm">
+            <dl className="divide-y">
+              <div className="flex justify-between gap-4 py-2 first:pt-0">
+                <dt className="text-muted-foreground">Category</dt>
+                <dd>
+                  <Link
+                    href={`/category/${tool.category}`}
+                    className="rounded-sm font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  >
+                    {tool.categoryName}
+                  </Link>
+                </dd>
+              </div>
+              <div className="flex justify-between gap-4 py-2">
+                <dt className="text-muted-foreground">Replaces</dt>
+                <dd className="font-medium">{tool.alternativeTo}</dd>
+              </div>
+              {tool.websiteUrl && (
+                <div className="flex justify-between gap-4 py-2">
+                  <dt className="text-muted-foreground">Website</dt>
+                  <dd className="min-w-0 truncate font-medium">{new URL(tool.websiteUrl).hostname}</dd>
+                </div>
+              )}
+              {github?.updatedAt && (
+                <div className="flex justify-between gap-4 py-2">
+                  <dt className="text-muted-foreground">Last updated</dt>
+                  <dd className="font-medium tabular-nums">
+                    {new Date(github.updatedAt).toLocaleDateString('en', { dateStyle: 'medium' })}
+                  </dd>
+                </div>
+              )}
+            </dl>
           </CardContent>
         </Card>
         {github && (

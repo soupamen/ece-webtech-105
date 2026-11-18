@@ -1,12 +1,12 @@
 import Link from 'next/link'
 import { addToolToListAction } from '@/app/list/actions'
-import { Button } from '@/components/ui/button'
+import SubmitButton from '@/components/SubmitButton'
 
 export default function AddToolToListForm({ lists, toolSlug = '' }) {
   if (!lists.length) {
     return (
       <p className="text-sm text-muted-foreground">
-        Create a list before saving tools. <Link className="underline" href="/list">Go to my lists</Link>
+        Create a list before saving tools. <Link className="underline rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50" href="/list">Go to my lists</Link>
       </p>
     )
   }
@@ -52,9 +52,9 @@ export default function AddToolToListForm({ lists, toolSlug = '' }) {
       {lists.length === 1 && (
         <input type="hidden" name="list_id" value={lists[0].id} />
       )}
-      <Button type="submit" variant="outline">
+      <SubmitButton variant="outline" pendingLabel="Saving...">
         {toolSlug ? 'Add to list' : 'Save tool'}
-      </Button>
+      </SubmitButton>
     </form>
   )
 }

@@ -77,6 +77,11 @@
   ::selection {
     @apply bg-foreground text-background;
   }
+  /* Chrome/Safari's native clear "×" ignores the theme; Escape still clears the field. */
+  input[type='search']::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+  }
 }
 
 /* No mb-10 from the lab example: PageHeader already spaces the title. */

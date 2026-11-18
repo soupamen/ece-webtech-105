@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import SubmitButton from '@/components/SubmitButton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import AddToolToListForm from '@/components/lists/AddToolToListForm'
 import PageHeader from '@/components/PageHeader'
@@ -77,7 +77,7 @@ export default async function ListsPage({ searchParams }) {
               />
             </div>
             <div className="sm:col-span-2">
-              <Button type="submit">Create list</Button>
+              <SubmitButton pendingLabel="Creating...">Create list</SubmitButton>
             </div>
           </form>
         </CardContent>
@@ -129,15 +129,19 @@ export default async function ListsPage({ searchParams }) {
                           className="h-10 w-full rounded-md border border-input bg-transparent px-3 text-sm"
                         />
                       </div>
-                      <Button type="submit" variant="outline">
+                      <SubmitButton variant="outline" pendingLabel="Saving...">
                         Save changes
-                      </Button>
+                      </SubmitButton>
                     </form>
                     <form action={deleteListAction}>
                       <input type="hidden" name="list_id" value={list.id} />
-                      <Button type="submit" variant="destructive">
+                      <SubmitButton
+                        variant="destructive"
+                        pendingLabel="Deleting..."
+                        confirmMessage={`Delete "${list.name}" and its saved tools? This cannot be undone.`}
+                      >
                         Delete list
-                      </Button>
+                      </SubmitButton>
                     </form>
                   </div>
                   <AddToolToListForm lists={[list]} />
@@ -170,9 +174,9 @@ export default async function ListsPage({ searchParams }) {
                                 name="tool_id"
                                 value={item.tool.id}
                               />
-                              <Button type="submit" size="sm" variant="outline">
+                              <SubmitButton size="sm" variant="outline" pendingLabel="Removing...">
                                 Remove
-                              </Button>
+                              </SubmitButton>
                             </form>
                           )}
                         </li>

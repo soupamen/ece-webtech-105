@@ -7,21 +7,14 @@ import EmptyState from '@/components/EmptyState'
 import Pagination, { exploreHref } from '@/components/Pagination'
 import { Button } from '@/components/ui/button'
 import { getCategories, getToolsPage } from '@/lib/supabase'
+import { parseExploreParams } from '@/lib/explore'
 
 // rendu serveur, resultat dependant des filtres dans l url
 export const dynamic = 'force-dynamic'
 
 // Shared by generateMetadata and Page within one request.
 const loadCategories = cache(getCategories)
-
-function parseParams(params) {
-  const q = typeof params.q === 'string' ? params.q.trim().slice(0, 100) : ''
-  const category =
-    typeof params.category === 'string' ? params.category.trim().slice(0, 80) : ''
-  const parsedPage = Number.parseInt(params.page, 10)
-  const page = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1
-  return { q, category, page }
-}
+const parseParams = parseExploreParams
 
 export async function generateMetadata({ searchParams }) {
   const { q, category } = parseParams(await searchParams)
