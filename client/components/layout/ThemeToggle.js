@@ -1,9 +1,33 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
+
+const THEME_CHANGE_EVENT = 'openfinder-theme-change'
+
+function subscribeToTheme(callback) {
+  window.addEventListener(THEME_CHANGE_EVENT, callback)
+  window.addEventListener('storage', callback)
+
+  return () => {
+    window.removeEventListener(THEME_CHANGE_EVENT, callback)
+    window.removeEventListener('storage', callback)
+  }
+}
+
+function getThemeSnapshot() {
+  return document.documentElement.classList.contains('dark')
+}
+
+function getServerThemeSnapshot() {
+  return false
+}
 
 export default function ThemeToggle() {
-  const [dark, setDark] = useState(false)
+  const dark = useSyncExternalStore(
+    subscribeToTheme,
+    getThemeSnapshot,
+    getServerThemeSnapshot
+  )
 
   // The inline script in layout.js already set the class before paint; just mirror it.
   useEffect(() => {

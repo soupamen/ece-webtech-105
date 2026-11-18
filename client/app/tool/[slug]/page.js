@@ -14,9 +14,15 @@ import { getCurrentUser } from '@/lib/supabase/user'
 // les donnees publiques sont en cache, la page varie selon la session
 export const revalidate = 60
 
-export async function generateStaticParams() {
-  const tools = await getTools()
-  return tools.map(({ slug }) => ({ slug }))
+export async function generateMetadata({ params }) {
+  const { slug } = await params
+  const tool = await getTool(slug)
+
+  return createPageMetadata({
+    title: tool?.name ?? 'Tool not found',
+    description: tool?.description ?? 'Discover open-source software alternatives.',
+    path: `/tool/${slug}`,
+  })
 }
 
 // Shared by generateMetadata and Page within one request.

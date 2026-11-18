@@ -8,7 +8,7 @@ import Pagination, { exploreHref } from '@/components/Pagination'
 import { Button } from '@/components/ui/button'
 import { getCategories, getToolsPage } from '@/lib/supabase'
 
-// SSR: results depend on URL filters, rendered on every request
+// rendu serveur, resultat dependant des filtres dans l url
 export const dynamic = 'force-dynamic'
 
 // Shared by generateMetadata and Page within one request.
