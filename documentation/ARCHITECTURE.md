@@ -31,20 +31,22 @@ flowchart TD
 ```
 
 Pages render on the server by default. Client Components are limited to
-interactive browser behavior such as active navigation and adding a tool to a
-list.
+interactive browser behavior such as active navigation, the theme toggle, and
+form pending or validation states.
 
 ## Repository structure
 
 ```text
 client/app/
-  layout.js                 # HTML shell, metadata, header, main container
-  page.js                   # Home page
+  layout.js                 # HTML shell, metadata, header, footer, main container
+  page.js                   # Home page (search, categories, featured tools)
+  loading.js                # Shared loading skeleton
+  error.js                  # Shared error boundary with retry
   not-found.js              # Global 404 page
   about/page.js             # Static project page
-  explore/page.js           # Dynamic exploration placeholder
-  category/page.js          # Static category index
-  category/[slug]/page.js   # Generated category detail
+  explore/                  # Search, filter and pagination (own loading/error)
+  category/page.js          # Category index with cached data
+  category/[slug]/page.js   # Category detail with cached data
   tool/[slug]/page.js       # Session-aware tool detail with cached public data
   contact/page.js           # Public contact form
   list/page.js              # Authenticated personal-list management
@@ -56,18 +58,28 @@ client/app/
 client/components/
   layout/Header.js          # Sticky header and brand link
   layout/NavLinks.js        # Active route navigation (Client Component)
+  layout/ThemeToggle.js     # Light/dark switch (Client Component)
+  layout/Footer.js          # Site footer with contact link
+  SearchBar.js              # Search and category filter (Client Component)
+  SubmitButton.js           # Pending state for server actions (Client Component)
   ContactForm.js            # Validated contact form (Client Component)
-  lists/                    # Interactive list controls
+  SuggestToolForm.js        # Validated suggestion form (Client Component)
+  ToolCard.js, CategoryCard.js, EmptyState.js, PageHeader.js, Pagination.js
+  ui/                       # shadcn-style primitives (button, card, input...)
+  lists/                    # List controls (server action forms)
   auth/                     # Shared authentication messages
 client/lib/
-  supabase.js               # Public catalogue queries
+  supabase.js               # Public catalogue queries (unstable_cache)
   supabase/                 # SSR clients and user access
   auth.js                   # Authentication validation and messages
+  explore.js                # Explore URL parameter parsing
   lists.js                  # List validation and queries
   moderation.js             # Suggestion validation and queries
   github.js                 # Server-side GitHub repository lookup
-client/public/
-  profile.png               # Static public asset
+  metadata.js               # Shared page metadata helper
+client/proxy.js             # Supabase session refresh on matched routes
+client/tests/               # Unit tests and Playwright e2e specs
+client/public/              # Static public assets
 supabase/
   migrations/               # Versioned PostgreSQL schema and RLS
   tests/                    # pgTAP authorization tests
@@ -77,13 +89,17 @@ supabase/
 ## Request and rendering flow
 
 1. Next.js enters `client/app/layout.js`.
-2. The layout loads global CSS, sets metadata, renders `Header`, and places the
-   route content inside the shared `<main>` container.
-3. The selected page renders its content.
-4. A route with a `revalidate` export is cached according to its interval.
-5. A route with `dynamic = 'force-dynamic'` renders for each request.
+2. The layout loads global CSS, sets metadata, renders `Header` and `Footer`,
+   and places the route content inside the shared `<main>` container.
+3. The selected page renders its content; `loading.js` shows a skeleton while
+   it streams and `error.js` catches failures.
+4. A route with `dynamic = 'force-static'` is built once.
+5. A route with `dynamic = 'force-dynamic'`, or that reads cookies, renders for
+   each request; public catalogue queries inside it are cached by
+   `unstable_cache`.
 6. `NavLinks` reads the pathname in the browser and sets `aria-current="page"`.
-7. `proxy.js` refreshes Supabase sessions on authenticated and account routes.
+7. `proxy.js` refreshes Supabase sessions on `/profile`, `/list`, `/auth`, and
+   `/tool/[slug]`.
 
 The complete route decision table is in [RENDERING.md](RENDERING.md).
 
@@ -98,8 +114,9 @@ out of client bundles.
 ### Client Components only for interaction
 
 `client/components/layout/NavLinks.js` is a Client Component because `usePathname()` requires browser
-execution. New client components should have a similarly concrete reason, such as
-local form state, a browser API, or event handlers.
+execution. The full list of Client Components and their reasons is in
+[RENDERING.md](RENDERING.md). New client components should have a similarly
+concrete reason, such as local form state, a browser API, or event handlers.
 
 ### Styling
 
