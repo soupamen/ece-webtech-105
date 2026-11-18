@@ -9,15 +9,16 @@ the official evaluation file is [PROJECT.md](../PROJECT.md).
 
 - Next.js 16, React 19, and Tailwind CSS v4 are installed.
 - The App Router provides the public catalogue, search, tool details, account,
-  personal-list, suggestion, and moderation routes.
+  personal-list, contact, suggestion, and moderation routes.
 - Supabase migrations, seed data, server-side access, and RLS policies are
   versioned in the repository.
 - Email authentication and private lists are implemented.
 - Tool suggestions remain private until a moderator reviews them; approval does
   not automatically publish a tool.
 - Unit tests, browser tests, pgTAP authorization tests, and CI are configured.
-- The local environment denied Docker access, so the latest pgTAP and full
-  authenticated browser flows still need confirmation in CI.
+- The integration branch has passed lint, unit tests, production build,
+  dependency audit, all 23 pgTAP assertions, and all 8 browser scenarios against
+  local Supabase.
 
 ## Delivery order
 

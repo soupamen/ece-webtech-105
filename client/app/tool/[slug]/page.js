@@ -11,7 +11,7 @@ import { getUserLists } from '@/lib/lists'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/supabase/user'
 
-// ISR: one static page per tool, refreshed every 60 seconds
+// les donnees publiques sont en cache, la page varie selon la session
 export const revalidate = 60
 
 export async function generateStaticParams() {
@@ -88,7 +88,7 @@ export default async function Page({ params }) {
               </Link>
             </Button>
           )}
-          {tool.websiteUrl ? (
+          {tool.websiteUrl && (
             <Button asChild variant="outline">
               <a href={tool.websiteUrl} target="_blank" rel="noreferrer">
                 Website<span className="sr-only"> (opens in a new tab)</span>
