@@ -4,16 +4,16 @@ import { notFound } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import AddToolToListForm from '@/components/lists/AddToolToListForm'
 import { getGithubRepository } from '@/lib/github'
-import { getTool, getTools } from '@/lib/supabase'
+import { createPageMetadata } from '@/lib/metadata'
+import { getTool } from '@/lib/supabase'
+import { getUserLists } from '@/lib/lists'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/supabase/user'
 
-// ISR: one static page per tool, refreshed every 60 seconds
+// les donnees publiques sont en cache, la page varie selon la session
 export const revalidate = 60
-
-export async function generateStaticParams() {
-  const tools = await getTools()
-  return tools.map(({ slug }) => ({ slug }))
-}
 
 // Shared by generateMetadata and Page within one request.
 const loadTool = cache(getTool)
@@ -21,18 +21,25 @@ const loadTool = cache(getTool)
 export async function generateMetadata({ params }) {
   const { slug } = await params
   const tool = await loadTool(slug)
-  if (!tool) return {}
-  return {
-    title: tool.name,
-    description: `${tool.name} is an open-source alternative to ${tool.alternativeTo}. ${tool.description ?? ''}`.trim(),
-  }
+  return createPageMetadata({
+    title: tool?.name ?? 'Tool not found',
+    description: tool
+      ? `${tool.name} is an open-source alternative to ${tool.alternativeTo}. ${tool.description ?? ''}`.trim()
+      : 'Discover open-source software alternatives.',
+    path: `/tool/${slug}`,
+  })
 }
 
 export default async function Page({ params }) {
   const { slug } = await params
   const tool = await loadTool(slug)
   if (!tool) notFound()
-  const github = await getGithubRepository(tool.githubRepo)
+  const [github, supabase] = await Promise.all([
+    getGithubRepository(tool.githubRepo),
+    createSupabaseServerClient(),
+  ])
+  const user = await getCurrentUser(supabase)
+  const lists = user ? await getUserLists(supabase) : []
 
   // 'en': the UI is English; the server locale would otherwise pick the separator (79 125 vs 79,125).
   const stats = github
@@ -69,8 +76,16 @@ export default async function Page({ params }) {
             Alternative to {tool.alternativeTo}
           </Badge>
         </div>
-        <div className="flex shrink-0 gap-2">
-          <Button disabled>Add to list</Button>
+        <div className="flex flex-col gap-3 sm:items-end">
+          {user ? (
+            <AddToolToListForm lists={lists} toolSlug={tool.slug} />
+          ) : (
+            <Button asChild variant="outline">
+              <Link href={`/auth/login?next=${encodeURIComponent(`/tool/${tool.slug}`)}`}>
+                Sign in to save
+              </Link>
+            </Button>
+          )}
           {tool.websiteUrl && (
             <Button asChild variant="outline">
               <a href={tool.websiteUrl} target="_blank" rel="noreferrer">
