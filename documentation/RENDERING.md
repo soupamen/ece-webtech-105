@@ -104,13 +104,3 @@ Client rendering is limited to interactive UI. Each file below uses
 `components/lists/AddToolToListForm.js` stays a Server Component: it posts to a
 server action and delegates the pending state to `SubmitButton`. Keep the
 surrounding layout and pages as Server Components.
-
-## Adding or changing a route
-
-1. Decide whether the output is public and cacheable, request-dependent, or
-   interactive.
-2. Add the smallest explicit export that expresses that decision.
-3. Add or update the route in the table above.
-4. Run `npm run build` and inspect the route behavior locally.
-5. If the route becomes user-specific, review data access and security before
-   shipping it.
