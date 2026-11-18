@@ -2,9 +2,10 @@
 
 # OpenFinder
 
-OpenFinder is the WebTech 105 team project: a directory for discovering open-source
-alternatives to software and online services. The public catalogue is backed by
-Supabase and the remaining user-facing features are being introduced incrementally.
+OpenFinder is the WebTech 105 team project: a directory for discovering
+open-source alternatives to software and online services. Its public catalogue,
+contact form, accounts, personal lists, and moderated tool suggestions use
+Supabase.
 
 ## Documentation map
 
@@ -13,9 +14,10 @@ Supabase and the remaining user-facing features are being introduced incremental
 | [Architecture](documentation/ARCHITECTURE.md) | Repository structure, route responsibilities, and extension rules |
 | [Rendering guide](documentation/RENDERING.md) | Why each route is static, dynamic, or incrementally regenerated |
 | [Project plan](documentation/PROJECT_PLAN.md) | Current scope, milestones, and definition of done |
+| [Deployment guide](documentation/DEPLOYMENT.md) | Supabase and Vercel setup, release, and smoke checks |
 | [Course requirements](documentation/PROJECT_INSTRUCTIONS.md) | Technical and presentation requirements |
 | [Git branch cheatsheet](documentation/.cheatsheet-git-branches.md) | Common branch and collaboration commands |
-| [Evaluation template](documentation/PROJECT.md) | Official self-evaluation; this file is maintained separately |
+| [Evaluation template](PROJECT.md) | Official self-evaluation; this file is maintained separately |
 
 ## Current status
 
@@ -23,43 +25,37 @@ Implemented in the prototype:
 
 - Next.js 16 App Router with React 19
 - Shared root layout and navigation
-- Home, about, explore, category, tool, list, profile, and not-found routes
+- Home, about, contact, explore, category, tool, list, profile, and not-found routes
 - Tailwind CSS v4 through the PostCSS plugin
 - Supabase migrations, seed data, RLS, and server-side data access
 - Catalogue search, category filtering, and pagination
 - Server-side GitHub repository information on tool pages
+- Public contact form with validation and insert-only access
+- Supabase email authentication and private personal lists
+- Authenticated tool suggestions and a moderator review queue
+- Unit, browser, and database RLS tests with a GitHub Actions workflow
 - Route rendering using SSG, ISR, and SSR
 - Responsive navigation styling and dark-mode utility classes
 
 Not implemented yet:
 
-- Supabase authentication
-- User-facing list and profile features
-- Contact form and moderation
-- Automated tests and CI
-- Full Vercel deployment verification
+- Production Supabase and Vercel configuration and smoke testing
+- SMTP delivery configuration for production account-confirmation email
+- Moderator assignment for the deployed Supabase project
+- Screenshots, presentation rehearsal, and the individual self-evaluation
 
-The project plan is the source of truth for the order in which these capabilities
-should be added. Do not document planned behavior as implemented behavior.
+The [project plan](documentation/PROJECT_PLAN.md) tracks the remaining delivery
+work. Do not document planned behavior as implemented behavior.
 
-Known setup limitations:
-
-- The `lint` script exists, but ESLint is not yet included in `package.json`; the
-  foundation milestone must add and configure it.
-- `npm audit` currently reports two moderate vulnerabilities through `nodemon`
-  and `minimatch`.
-
-### Next.js security upgrade
-
-The current `main` uses Next.js 16.4.5. The earlier `security/next-upgrade`
-branch was an isolated test of 16.4.3 from an older base; it is not needed to
-use or integrate the update on `main`.
+Keep the dependency lockfile's tested Next.js patch version current and run the
+production build before deployment.
 
 ## Prerequisites
 
-- Node.js 26.x, or the version selected by the team for the current milestone
+- Node.js 24 or newer (CI currently uses Node.js 26)
 - npm 10+
 - Git
+- Docker Engine or Docker Desktop
 
 Check the installed versions before starting:
 
@@ -73,23 +69,32 @@ npm --version
 ```bash
 git clone https://github.com/soupamen/ece-webtech-105.git
 cd ece-webtech-105
-cd client
 npm ci
-npm run dev
+npm ci --prefix client
+npx supabase start
 ```
 
-Open <http://localhost:3000>. The development server reloads when application
-files change. Stop it with `Ctrl+C`.
+Copy `client/.env.example` to `client/.env.local`. Set the local API URL and
+publishable key from `npx supabase status -o env`, and set
+`NEXT_PUBLIC_SITE_URL=http://localhost:3000`. Use only the public API URL and
+publishable/anon key; never put the service-role key in the client environment.
 
-Useful commands:
+Start the app with `npm --prefix client run dev`, then open
+<http://localhost:3000>. The development server reloads when application files
+change. Stop it with `Ctrl+C`.
+
+Useful commands from the repository root:
 
 | Command | Purpose |
 | --- | --- |
-| `npm run dev` | Start the development server |
-| `npm run build` | Create a production build |
-| `npm run start` | Serve the production build |
-| `npm run lint` | Run ESLint |
-| `npm run lint:fix` | Apply safe ESLint fixes |
+| `npm --prefix client run dev` | Start the development server |
+| `npm --prefix client run build` | Create a production build |
+| `npm --prefix client run start` | Serve the production build |
+| `npm --prefix client run lint` | Run ESLint |
+| `npm --prefix client test` | Run unit tests |
+| `npm --prefix client run test:e2e` | Run browser tests |
+| `npx supabase start` | Start the local Supabase stack |
+| `npx supabase test db` | Run database RLS tests |
 
 The application requires these variables in `client/.env.local` for local
 development and in Vercel for each relevant environment:
@@ -97,10 +102,17 @@ development and in Vercel for each relevant environment:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
 Use only the public Supabase URL and publishable/anon key. Never commit
 credentials or service-role keys.
+
+The browser suite uses the production build. Start local Supabase, run
+`npm --prefix client run build`, then run `npm --prefix client run test:e2e`.
+The authenticated signup, list, and suggestion journeys run when
+`SUPABASE_E2E_ENABLED=1` is set and Supabase is available. The CI workflow
+starts Supabase and enables these journeys automatically.
 
 ## Route overview
 
@@ -109,12 +121,18 @@ credentials or service-role keys.
 | `/` | Project landing page | ISR, 1 hour |
 | `/about` | Project information | Static |
 | `/explore` | Search, category filtering, and pagination | Dynamic |
-| `/category` | Category index from Supabase | Static |
-| `/category/[slug]` | Category detail from Supabase | Static parameters |
-| `/tool/[slug]` | Tool detail and GitHub information | ISR, 60 seconds |
-| `/list` | Future personal lists surface | Dynamic |
-| `/profile` | Future personal profile surface | Dynamic |
-| `/not-found` | Fallback for unknown routes | Static |
+| `/category` | Category index from Supabase | Dynamic; public data cached for 1 hour |
+| `/category/[slug]` | Category detail from Supabase | Dynamic; public data cached for 1 hour |
+| `/tool/[slug]` | Tool detail, GitHub data, and session-specific save controls | Dynamic; public data cached for 60 seconds |
+| `/contact` | Public contact and suggestion form | Static shell, interactive form |
+| `/list` | Authenticated personal lists and saved tools | Dynamic |
+| `/profile` | Account state and sign-out | Dynamic |
+| `/auth/login` | Email and password sign-in | Dynamic |
+| `/auth/signup` | Account creation | Dynamic |
+| `/auth/callback` | Email-confirmation callback | Dynamic |
+| `/suggest` | Submit a catalogue suggestion and view its status | Dynamic |
+| `/moderation` | Review suggestions; moderator-only | Dynamic |
+| `404` | Fallback for unknown routes | Static |
 
 See the [rendering guide](documentation/RENDERING.md) for the reasoning and the
 exact source files behind each entry.
@@ -137,8 +155,14 @@ the active search and category in the previous/next links.
 
 The schema is versioned in `supabase/migrations/` and seeded by
 `supabase/seed.sql`. The public `categories` and `tools` tables are readable
-through RLS. The `lists` and `list_items` tables are prepared for authenticated
-users and restrict access to each user's own lists.
+through RLS. The `lists` and `list_items` tables restrict access to each user's
+own lists.
+The `contacts` table accepts inserts but has no public read policy.
+Tool suggestions are private to their submitter and moderators until an
+authorized moderator reviews them. Moderator access is based on the trusted
+Supabase `app_metadata.role` claim; ordinary user metadata cannot grant this
+role. See the [deployment guide](documentation/DEPLOYMENT.md) for secure
+moderator assignment and production setup.
 
 Tool pages call GitHub's public REST API only from server components. Responses
 are cached for 60 seconds. Timeouts, rate limits, invalid responses, and missing
@@ -153,6 +177,8 @@ rendering.
   event handler is required.
 - Keep route-specific data and rendering close to the route until a shared
   abstraction is justified.
+- Keep admin operations and service-role credentials on trusted server-side
+  infrastructure only.
 - Use descriptive names and small components.
 - Update the relevant documentation when a route, rendering mode, dependency, or
   user workflow changes.
@@ -162,7 +188,8 @@ rendering.
 
 ### The page is not updating
 
-The home page and tool pages use caching by design. Use `npm run dev`, then check
+The home page and tool pages use caching by design. Use
+`npm --prefix client run dev`, then check
 the route's `revalidate` or `dynamic` export in the matching file. See
 [RENDERING.md](documentation/RENDERING.md) before changing caching behavior.
 

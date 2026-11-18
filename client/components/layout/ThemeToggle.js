@@ -1,16 +1,33 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
+
+const THEME_CHANGE_EVENT = 'openfinder-theme-change'
+
+function subscribeToTheme(callback) {
+  window.addEventListener(THEME_CHANGE_EVENT, callback)
+  window.addEventListener('storage', callback)
+
+  return () => {
+    window.removeEventListener(THEME_CHANGE_EVENT, callback)
+    window.removeEventListener('storage', callback)
+  }
+}
+
+function getThemeSnapshot() {
+  return document.documentElement.classList.contains('dark')
+}
+
+function getServerThemeSnapshot() {
+  return false
+}
 
 export default function ThemeToggle() {
-  const [dark, setDark] = useState(false)
-
-  // The inline script in layout.js already set the class before paint; just mirror it.
-  useEffect(() => {
-    // Reading the DOM in useState would mismatch the server render, so sync once after mount.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setDark(document.documentElement.classList.contains('dark'))
-  }, [])
+  const dark = useSyncExternalStore(
+    subscribeToTheme,
+    getThemeSnapshot,
+    getServerThemeSnapshot
+  )
 
   const toggleTheme = () => {
     const nextDark = !dark
@@ -18,7 +35,7 @@ export default function ThemeToggle() {
     try {
       window.localStorage.setItem('theme', nextDark ? 'dark' : 'light')
     } catch {}
-    setDark(nextDark)
+    window.dispatchEvent(new Event(THEME_CHANGE_EVENT))
   }
 
   return (
