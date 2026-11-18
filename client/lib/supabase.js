@@ -171,3 +171,9 @@ export async function removeToolFromList({ listId, toolId }) {
   if (error) throw error
   return data
 }
+
+// No .select() after insert: RLS forbids reading contacts back.
+export async function createContact(contact) {
+  const { error } = await supabase.from('contacts').insert(contact)
+  if (error) throw error
+}

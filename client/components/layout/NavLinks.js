@@ -7,6 +7,10 @@ import SearchBar from './SearchBar'
 
 const links = [
   { href: '/', label: 'Home' },
+  { href: '/explore', label: 'Explore' },
+  { href: '/category', label: 'Category' },
+  { href: '/list', label: 'List' },
+  { href: '/contact', label: 'Contact' },
   { href: '/profile', label: 'Profile' },
 ]
 
