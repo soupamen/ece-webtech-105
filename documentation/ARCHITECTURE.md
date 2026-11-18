@@ -2,14 +2,15 @@
 
 ## Scope
 
-OpenFinder is currently a small Next.js App Router application. The codebase is
-intentionally simple: pages own route composition, data access is centralized in
-`client/lib/`, the root layout owns the site chrome, and the navigation is the
-only client-side component. The schema is versioned in `supabase/migrations/`
-and populated by `supabase/seed.sql`.
+OpenFinder is a Next.js App Router application for discovering open-source
+alternatives. Pages own route composition, data access is centralized in
+`client/lib/`, the root layout owns the site chrome, and interactive controls use
+small Client Components. The schema is versioned in `supabase/migrations/` and
+populated by `supabase/seed.sql`.
 
-The target product is a searchable directory of open-source alternatives.
-Authentication and user-facing collection features remain future work.
+The application supports a public searchable catalogue, a public contact form,
+Supabase email authentication, private user lists, tool suggestions, and
+moderator review.
 
 ## Runtime shape
 
@@ -20,14 +21,18 @@ flowchart TD
     RootLayout --> Header[client/components/layout/Header.js]
     Header --> Nav[client/components/layout/NavLinks.js]
     Pages --> Tailwind[client/app/globals.css]
-    Pages --> Data[client/lib/supabase.js]
+    Pages --> Data[client/lib/]
     Pages --> GitHub[client/lib/github.js]
     Data --> Supabase[(Supabase)]
     GitHub --> GitHubAPI[GitHub REST API]
+    Auth[client/app/auth/] --> Supabase
+    Suggestions[client/app/suggest/] --> Supabase
+    Moderation[client/app/moderation/] --> Supabase
 ```
 
-All current pages are rendered by Next.js. The browser only needs JavaScript for
-the active-link navigation component.
+Pages render on the server by default. Client Components are limited to
+interactive browser behavior such as active navigation and adding a tool to a
+list.
 
 ## Repository structure
 
@@ -40,20 +45,32 @@ client/app/
   explore/page.js           # Dynamic exploration placeholder
   category/page.js          # Static category index
   category/[slug]/page.js   # Generated category detail
-  tool/[slug]/page.js       # Incrementally regenerated tool detail
-  list/page.js              # Dynamic personal-list placeholder
-  profile/page.js           # Dynamic profile placeholder
+  tool/[slug]/page.js       # Session-aware tool detail with cached public data
+  contact/page.js           # Public contact form
+  list/page.js              # Authenticated personal-list management
+  profile/page.js           # Account state and sign-out
+  auth/                     # Email authentication and confirmation callback
+  suggest/                  # Authenticated catalogue submissions
+  moderation/               # Moderator-only submission queue
   globals.css               # Global Tailwind import
 client/components/
   layout/Header.js          # Sticky header and brand link
   layout/NavLinks.js        # Active route navigation (Client Component)
+  ContactForm.js            # Validated contact form (Client Component)
+  lists/                    # Interactive list controls
+  auth/                     # Shared authentication messages
 client/lib/
-  supabase.js               # Supabase queries and collection access functions
+  supabase.js               # Public catalogue queries
+  supabase/                 # SSR clients and user access
+  auth.js                   # Authentication validation and messages
+  lists.js                  # List validation and queries
+  moderation.js             # Suggestion validation and queries
   github.js                 # Server-side GitHub repository lookup
 client/public/
   profile.png               # Static public asset
 supabase/
   migrations/               # Versioned PostgreSQL schema and RLS
+  tests/                    # pgTAP authorization tests
   seed.sql                   # Local demonstration data
 ```
 
@@ -66,6 +83,7 @@ supabase/
 4. A route with a `revalidate` export is cached according to its interval.
 5. A route with `dynamic = 'force-dynamic'` renders for each request.
 6. `NavLinks` reads the pathname in the browser and sets `aria-current="page"`.
+7. `proxy.js` refreshes Supabase sessions on authenticated and account routes.
 
 The complete route decision table is in [RENDERING.md](RENDERING.md).
 
@@ -99,7 +117,7 @@ When product features are added, keep these concerns separate:
 | Reusable UI | `client/components/` | Default to Server Components |
 | Data access | `client/lib/` | Keep database and external API calls out of presentational components |
 | Database schema and policies | `supabase/` | Version migrations and test RLS with the schema |
-| Automated tests | `tests/` | Group unit, integration, and end-to-end tests by purpose |
+| Automated tests | `client/tests/`, `supabase/tests/` | Keep unit, browser, and RLS tests near their runner |
 
 ### Data model
 
@@ -112,14 +130,26 @@ The directory data is split into two public tables:
 Both catalogue tables are readable by anonymous and authenticated users. Writes
 are not exposed through their policies.
 
-Collections are prepared for the authentication milestone:
+Contacts can be inserted by anonymous or authenticated visitors. RLS exposes no
+read policy, so messages cannot be queried through the public API.
+
+Personal lists are available to authenticated users:
 
 - `lists` belongs to one `auth.users` record;
 - `list_items` links a list to a tool with a composite primary key;
 - RLS allows authenticated users to access only their own lists and list items.
 
-The collection access functions are prepared, but authentication and the
-`/list` and `/profile` interfaces remain placeholders.
+Tool suggestions are stored separately from the public catalogue:
+
+- `tool_submissions` stores the proposed details and a pending/approved/rejected
+  status;
+- submitters can read only their own suggestions;
+- moderators can read and review all suggestions;
+- `public.is_moderator()` reads only the trusted Supabase `app_metadata` claim.
+
+Approving a suggestion records the decision but does not publish a catalogue
+tool automatically. A moderator must validate and add approved tools through a
+separate trusted catalogue-maintenance process.
 
 Public tool pages can enrich Supabase data with GitHub repository metadata.
 The API call is server-side, cached for 60 seconds, and optional: failures do
@@ -133,6 +163,8 @@ Do not create these folders until the corresponding feature exists.
   asynchronous data.
 - Validate user input at the boundary and authorize every write on the server.
 - Keep private keys server-only; never prefix them with `NEXT_PUBLIC_`.
+- Assign moderator claims only through a trusted Supabase admin operation; never
+  trust user-editable metadata for authorization.
 - Use database RLS as the final authorization boundary, not as a replacement for
   readable application checks.
 - Never render untrusted Markdown or HTML without sanitization.
