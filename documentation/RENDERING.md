@@ -10,8 +10,8 @@ requirements change.
 | --- | --- | --- | --- |
 | `/` | `client/app/page.js` | ISR, 3,600 seconds | Public landing content can be cached and refreshed hourly |
 | `/about` | `client/app/about/page.js` | Static | Content has no request-time data |
-| `/category` | `client/app/category/page.js` | Static | Category index is read from Supabase at build time |
-| `/category/[slug]` | `client/app/category/[slug]/page.js` | Static parameters | Known category pages are generated from Supabase data |
+| `/category` | `client/app/category/page.js` | Dynamic, public data cached 3,600 seconds | The page uses dynamic rendering and a cached public category query |
+| `/category/[slug]` | `client/app/category/[slug]/page.js` | Dynamic, public data cached 3,600 seconds | Category details and tools use cached public queries |
 | `/tool/[slug]` | `client/app/tool/[slug]/page.js` | Dynamic, public data cached 60 seconds | The save control depends on the signed-in user |
 | `/contact` | `client/app/contact/page.js` | Static shell | The route is public; the form submits through a client interaction |
 | `/explore` | `client/app/explore/page.js` | Dynamic | Results depend on URL search, category, and page parameters |
@@ -29,12 +29,9 @@ requirements change.
 ### Static rendering (SSG)
 
 Use static rendering when the output is the same for every visitor and does not
-need request-time data. `dynamic = 'force-static'` makes that intent explicit on
-the about and category index pages. The public catalogue is read from Supabase
-during the static build.
-
-The `/category/[slug]` and `/tool/[slug]` parameters are generated from
-Supabase catalogue data. Unknown slugs keep the existing `notFound()` behavior.
+need request-time data. The about page and not-found fallback have no
+request-time data. Unknown category and tool slugs keep the existing
+`notFound()` behavior.
 
 ### Incremental Static Regeneration (ISR)
 
@@ -57,8 +54,9 @@ so the Supabase-backed page remains available.
 Use `dynamic = 'force-dynamic'` when a page depends on request-time state, such
 as URL filters or authenticated user data. `/explore` reads `q`, `category`, and
 `page` from the URL and performs the filtered, counted Supabase query on every
-request. Account, list, suggestion, and moderation routes use cookies and
-user-specific Supabase access, so they must not be statically rendered or
+request. Category routes use dynamic rendering while caching their public
+catalogue queries. Account, list, suggestion, and moderation routes use cookies
+and user-specific Supabase access, so they must not be statically rendered or
 shared between users. Tool detail also reads the session to render the correct
 save action; its public catalogue and GitHub data remain cached. The
 authenticated routes set `noindex` metadata where appropriate. Do not use

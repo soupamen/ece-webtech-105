@@ -12,11 +12,6 @@ export const metadata = createPageMetadata({
   path: '/category',
 })
 
-export const metadata = {
-  title: 'Categories',
-  description: 'Browse open-source alternatives by type of software.',
-}
-
 export default async function Page() {
   const categories = await getCategories()
 

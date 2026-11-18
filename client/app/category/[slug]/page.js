@@ -6,21 +6,10 @@ import ToolCard from '@/components/ToolCard'
 import EmptyState from '@/components/EmptyState'
 import { exploreHref } from '@/components/Pagination'
 import { Button } from '@/components/ui/button'
-import { getCategories, getCategory, getToolsByCategory } from '@/lib/supabase'
+import { createPageMetadata } from '@/lib/metadata'
+import { getCategory, getToolsByCategory } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
-
-export async function generateMetadata({ params }) {
-  const { slug } = await params
-  const category = await getCategory(slug)
-
-  return createPageMetadata({
-    title: category?.name ?? 'Category not found',
-    description:
-      category?.description ?? 'Browse open-source alternatives by category.',
-    path: `/category/${slug}`,
-  })
-}
 
 // Shared by generateMetadata and Page within one request.
 const loadCategory = cache(getCategory)
@@ -28,11 +17,12 @@ const loadCategory = cache(getCategory)
 export async function generateMetadata({ params }) {
   const { slug } = await params
   const category = await loadCategory(slug)
-  if (!category) return {}
-  return {
-    title: category.name,
-    description: `Open-source alternatives in ${category.name}. ${category.description ?? ''}`.trim(),
-  }
+  return createPageMetadata({
+    title: category?.name ?? 'Category not found',
+    description:
+      category?.description ?? 'Browse open-source alternatives by category.',
+    path: `/category/${slug}`,
+  })
 }
 
 export default async function Page({ params }) {

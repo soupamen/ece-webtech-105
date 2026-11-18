@@ -121,8 +121,8 @@ starts Supabase and enables these journeys automatically.
 | `/` | Project landing page | ISR, 1 hour |
 | `/about` | Project information | Static |
 | `/explore` | Search, category filtering, and pagination | Dynamic |
-| `/category` | Category index from Supabase | Static |
-| `/category/[slug]` | Category detail from Supabase | Static parameters |
+| `/category` | Category index from Supabase | Dynamic; public data cached for 1 hour |
+| `/category/[slug]` | Category detail from Supabase | Dynamic; public data cached for 1 hour |
 | `/tool/[slug]` | Tool detail, GitHub data, and session-specific save controls | Dynamic; public data cached for 60 seconds |
 | `/contact` | Public contact and suggestion form | Static shell, interactive form |
 | `/list` | Authenticated personal lists and saved tools | Dynamic |
