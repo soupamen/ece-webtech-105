@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
@@ -14,9 +15,22 @@ export async function generateStaticParams() {
   return tools.map(({ slug }) => ({ slug }))
 }
 
+// Shared by generateMetadata and Page within one request.
+const loadTool = cache(getTool)
+
+export async function generateMetadata({ params }) {
+  const { slug } = await params
+  const tool = await loadTool(slug)
+  if (!tool) return {}
+  return {
+    title: tool.name,
+    description: `${tool.name} is an open-source alternative to ${tool.alternativeTo}. ${tool.description ?? ''}`.trim(),
+  }
+}
+
 export default async function Page({ params }) {
   const { slug } = await params
-  const tool = await getTool(slug)
+  const tool = await loadTool(slug)
   if (!tool) notFound()
   const github = await getGithubRepository(tool.githubRepo)
 
