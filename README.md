@@ -7,7 +7,7 @@ software you already use.
 
 Live demo: <https://openfinder-ivory.vercel.app>
 
-## Tech stack
+## Stack
 
 - Frontend: Next.js 16 (App Router, Server Components) and React 19
 - Styling: Tailwind CSS v4 with Radix UI primitives

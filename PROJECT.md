@@ -146,7 +146,7 @@ described.
 
 Yannis De Saint Loubert: [Your answer here]
 
-Lilian Bulteau: [Your answer here]
+Lilian Bulteau: The Explore page: you can search for a tool, filter by category and move between pages, and everything is saved in the URL, so a search could be shared.
 
 Arsène Léonard Barton--von Saurma: [Your answer here]
 
@@ -156,7 +156,7 @@ Arsène Léonard Barton--von Saurma: [Your answer here]
 
 Yannis De Saint Loubert: [Your answer here]
 
-Lilian Bulteau: [Your answer here]
+Lilian Bulteau: I would let users rate and review tools and make lists shareable with a public link.
 
 Arsène Léonard Barton--von Saurma: [Your answer here]
 
@@ -166,6 +166,6 @@ Arsène Léonard Barton--von Saurma: [Your answer here]
 
 Yannis De Saint Loubert: [Your answer here]
 
-Lilian Bulteau: [Your answer here]
+Lilian Bulteau: I liked the MCQs during the online sessions, they kept me engaged unlike other theoretical online lecture. The course was interesting and made me curious.
 
 Arsène Léonard Barton--von Saurma: [Your answer here]
