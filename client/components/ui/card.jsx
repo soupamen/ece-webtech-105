@@ -1,4 +1,3 @@
-import * as React from "react"
 import { cn } from "@/lib/utils"
 
 function Card({
@@ -34,11 +33,12 @@ function CardHeader({
 }
 
 function CardTitle({
+  as: Component = "h2",
   className,
   ...props
 }) {
   return (
-    <div
+    <Component
       data-slot="card-title"
       className={cn("leading-none font-semibold", className)}
       {...props}
