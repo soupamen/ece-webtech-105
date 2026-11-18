@@ -14,10 +14,15 @@ const links = [
   { href: '/profile', label: 'Profile' },
 ]
 
+const focusRing = 'rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50'
+
 const linkClass = (active) =>
-  active
-    ? 'font-semibold text-foreground underline underline-offset-4'
-    : 'text-muted-foreground transition-colors hover:text-foreground'
+  cn(
+    focusRing,
+    active
+      ? 'font-semibold text-foreground underline underline-offset-4'
+      : 'text-muted-foreground transition-colors hover:text-foreground'
+  )
 
 // children: server-rendered extras (ThemeToggle) placed between the links and the menu button.
 export default function NavLinks({ children }) {

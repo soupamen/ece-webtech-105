@@ -6,7 +6,7 @@ export default function AddToolToListForm({ lists, toolSlug = '' }) {
   if (!lists.length) {
     return (
       <p className="text-sm text-muted-foreground">
-        Create a list before saving tools. <Link className="underline" href="/list">Go to my lists</Link>
+        Create a list before saving tools. <Link className="underline rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50" href="/list">Go to my lists</Link>
       </p>
     )
   }
