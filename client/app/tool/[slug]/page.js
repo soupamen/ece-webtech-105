@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import AddToolToListForm from '@/components/lists/AddToolToListForm'
 import { getGithubRepository } from '@/lib/github'
-import { getTool, getTools } from '@/lib/supabase'
+import { createPageMetadata } from '@/lib/metadata'
+import { getTool } from '@/lib/supabase'
 import { getUserLists } from '@/lib/lists'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/supabase/user'
@@ -14,28 +15,19 @@ import { getCurrentUser } from '@/lib/supabase/user'
 // les donnees publiques sont en cache, la page varie selon la session
 export const revalidate = 60
 
-export async function generateMetadata({ params }) {
-  const { slug } = await params
-  const tool = await getTool(slug)
-
-  return createPageMetadata({
-    title: tool?.name ?? 'Tool not found',
-    description: tool?.description ?? 'Discover open-source software alternatives.',
-    path: `/tool/${slug}`,
-  })
-}
-
 // Shared by generateMetadata and Page within one request.
 const loadTool = cache(getTool)
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
   const tool = await loadTool(slug)
-  if (!tool) return {}
-  return {
-    title: tool.name,
-    description: `${tool.name} is an open-source alternative to ${tool.alternativeTo}. ${tool.description ?? ''}`.trim(),
-  }
+  return createPageMetadata({
+    title: tool?.name ?? 'Tool not found',
+    description: tool
+      ? `${tool.name} is an open-source alternative to ${tool.alternativeTo}. ${tool.description ?? ''}`.trim()
+      : 'Discover open-source software alternatives.',
+    path: `/tool/${slug}`,
+  })
 }
 
 export default async function Page({ params }) {
