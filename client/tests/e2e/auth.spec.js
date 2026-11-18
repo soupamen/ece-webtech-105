@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 
+// Guests see sign-in and sign-up links on the profile page.
 test('a guest sees account options on the profile page', async ({ page }) => {
   await page.goto('/profile')
 
@@ -8,6 +9,7 @@ test('a guest sees account options on the profile page', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Create account' })).toBeVisible()
 })
 
+// /list is protected: guests are redirected to login with a return path.
 test('a guest is sent to sign in before opening personal lists', async ({
   page,
 }) => {
@@ -19,6 +21,7 @@ test('a guest is sent to sign in before opening personal lists', async ({
   ).toBeVisible()
 })
 
+// /suggest is protected the same way.
 test('a guest is sent to sign in before suggesting a tool', async ({ page }) => {
   await page.goto('/suggest')
 
@@ -28,12 +31,14 @@ test('a guest is sent to sign in before suggesting a tool', async ({ page }) => 
   ).toBeVisible()
 })
 
+// The login form drops an external "next" URL and falls back to /profile.
 test('auth forms reject external return paths', async ({ page }) => {
   await page.goto('/auth/login?next=https%3A%2F%2Fexample.com')
 
   await expect(page.locator('input[name="next"]')).toHaveValue('/profile')
 })
 
+// Full CRUD journey: sign up, create/edit a list, add/remove a tool, delete, sign out.
 test('a user can sign up and manage a personal list', async ({ page }) => {
   test.skip(!process.env.SUPABASE_E2E_ENABLED, 'requires local Supabase')
 
@@ -76,6 +81,7 @@ test('a user can sign up and manage a personal list', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Guest' })).toBeVisible()
 })
 
+// A regular user can submit a suggestion but is turned away from /moderation.
 test('a user can send a tool suggestion but cannot open moderation', async ({
   page,
 }) => {
@@ -107,6 +113,7 @@ test('a user can send a tool suggestion but cannot open moderation', async ({
   await expect(page).toHaveURL(/\/profile$/)
 })
 
+// No horizontal scroll at 320px, and the theme toggle switches its label.
 test('navigation wraps at mobile width and the theme toggle works', async ({
   page,
 }) => {
