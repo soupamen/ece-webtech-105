@@ -63,6 +63,26 @@ export default function LoginPage() {
     setMessage('Check your email to confirm your account before signing in.')
   }
 
+  async function signInWithGitHub() {
+    setError('')
+    setLoading(true)
+
+    const callbackUrl = new URL('/auth/callback', window.location.origin)
+    callbackUrl.searchParams.set('next', '/list')
+
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: {
+        redirectTo: callbackUrl.toString(),
+      },
+    })
+
+    setLoading(false)
+    if (oauthError) {
+      setError(oauthError.message)
+    }
+  }
+
   return (
     <Card className="mx-auto max-w-md">
       <CardHeader>
@@ -110,6 +130,15 @@ export default function LoginPage() {
               Sign up
             </Button>
           </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            disabled={loading}
+            onClick={signInWithGitHub}
+          >
+            Continue with GitHub
+          </Button>
         </form>
       </CardContent>
     </Card>
