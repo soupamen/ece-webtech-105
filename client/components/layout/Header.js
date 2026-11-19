@@ -10,7 +10,7 @@ export default function Header() {
         <Link href="/" className="font-bold">
           WebTech 105
         </Link>
-        <div className="flex items-center gap-4">
+        <div className="flex h-full items-center gap-4">
           <AuthStatus />
           <ThemeToggle />
           <NavLinks />
