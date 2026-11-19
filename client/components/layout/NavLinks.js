@@ -7,6 +7,7 @@ import SearchBar from './SearchBar'
 
 const links = [
   { href: '/', label: 'Home' },
+  { href: '/list', label: 'List' },
   { href: '/profile', label: 'Profile' },
 ]
 
@@ -17,13 +18,13 @@ export default function NavLinks() {
     href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href + '/')
 
   return (
-    <nav aria-label="Main">
-      <ul className="flex gap-3 text-sm sm:gap-6 sm:text-base">
+    <nav aria-label="Main" className="flex h-full items-center">
+      <ul className="flex h-full items-center gap-3 text-sm sm:gap-6 sm:text-base">
         {links.map(({ href, label }, index) => {
           const active = isActive(href)
           return (
             <Fragment key={href}>
-              <li>
+              <li className="flex h-full items-center">
                 <Link
                   href={href}
                   aria-current={active ? 'page' : undefined}

@@ -44,6 +44,7 @@ export default function NewListForm() {
           id="list-name"
           value={name}
           onChange={(event) => setName(event.target.value)}
+          placeholder="My tools"
           required
           maxLength={100}
         />
@@ -60,7 +61,7 @@ export default function NewListForm() {
         />
       </div>
       {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
-      <Button type="submit" disabled={loading || !name.trim()}>
+      <Button type="submit" disabled={loading}>
         {loading ? 'Creating...' : 'Create list'}
       </Button>
     </form>
