@@ -1,32 +1,49 @@
+'use client'
+
+import Form from 'next/form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-// Plain GET form: submits to /explore?q=..., no client JS needed.
+// next/form: GET to /explore?q=&category= with client-side navigation; plain form without JS.
 export default function SearchBar({ defaultValue = '', category = '', categories = [] }) {
   return (
-    <form action="/explore" role="search" className="flex w-full max-w-xl gap-2">
+    <Form action="/explore" role="search" className="flex w-full flex-col gap-2 sm:flex-row">
+      <label htmlFor="explore-q" className="sr-only">
+        Search tools
+      </label>
       <Input
+        id="explore-q"
+        type="search"
         name="q"
         defaultValue={defaultValue}
+        maxLength={100}
         placeholder="Search a tool or the software it replaces…"
-        aria-label="Search"
+        className="h-10 sm:flex-1"
       />
       {categories.length > 0 && (
-        <select
-          name="category"
-          defaultValue={category}
-          aria-label="Filter by category"
-          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
-        >
-          <option value="">All categories</option>
-          {categories.map((item) => (
-            <option key={item.slug} value={item.slug}>
-              {item.name}
-            </option>
-          ))}
-        </select>
+        <>
+          <label htmlFor="explore-category" className="sr-only">
+            Category
+          </label>
+          <select
+            id="explore-category"
+            name="category"
+            defaultValue={category}
+            onChange={(event) => event.currentTarget.form.requestSubmit()}
+            className="h-10 rounded-md border border-input bg-transparent px-3 pr-9 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 sm:w-52 dark:bg-input/30"
+          >
+            <option value="">All categories</option>
+            {categories.map((item) => (
+              <option key={item.slug} value={item.slug}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+        </>
       )}
-      <Button type="submit">Search</Button>
-    </form>
+      <Button type="submit" size="lg">
+        Search
+      </Button>
+    </Form>
   )
 }

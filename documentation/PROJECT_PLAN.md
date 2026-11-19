@@ -3,19 +3,26 @@
 This plan is intentionally short and outcome-based. It describes the work still
 needed from the current prototype to the course-ready OpenFinder product. The
 assignment constraints are in [PROJECT_INSTRUCTIONS.md](PROJECT_INSTRUCTIONS.md);
-the official evaluation file is [PROJECT.md](PROJECT.md).
+the official evaluation file is [PROJECT.md](../PROJECT.md).
 
 ## Current baseline
 
 - Next.js 16, React 19, and Tailwind CSS v4 are installed.
-- The App Router contains the routes listed in [README.md](README.md).
-- Pages contain representative placeholder content only.
-- No database, authentication, external API, automated tests, or deployment
-  configuration exists yet.
+- The App Router provides the public catalogue, search, tool details, account,
+  personal-list, contact, suggestion, and moderation routes.
+- Supabase migrations, seed data, server-side access, and RLS policies are
+  versioned in the repository.
+- Email authentication and private lists are implemented.
+- Tool suggestions remain private until a moderator reviews them; approval does
+  not automatically publish a tool.
+- Unit tests, browser tests, pgTAP authorization tests, and CI are configured.
+- The integration branch has passed lint, unit tests, production build,
+  dependency audit, all 23 pgTAP assertions, and all 8 browser scenarios against
+  local Supabase.
 
 ## Delivery order
 
-### Milestone 1 — Foundation
+### Milestone 1 — Foundation (complete)
 
 - Establish the product vocabulary: resource, category, user, and list.
 - Replace placeholder copy with the first coherent browse experience.
@@ -25,7 +32,7 @@ the official evaluation file is [PROJECT.md](PROJECT.md).
 **Exit condition:** a new contributor can install, run, understand, and verify the
 application locally.
 
-### Milestone 2 — Catalog
+### Milestone 2 — Catalog (complete)
 
 - Add Supabase migrations, seed data, and typed data access.
 - Implement category and resource pages.
@@ -34,7 +41,7 @@ application locally.
 
 **Exit condition:** a visitor can reliably find and open a seeded resource.
 
-### Milestone 3 — Accounts and contribution
+### Milestone 3 — Accounts and contribution (implemented)
 
 - Add Supabase authentication and protected profile/list routes.
 - Add CRUD for one main user-owned resource.
@@ -42,8 +49,9 @@ application locally.
 - Add server-side validation and clear authorization errors.
 
 **Exit condition:** one user cannot read or modify another user's private data.
+RLS checks are covered by pgTAP and run in the CI workflow.
 
-### Milestone 4 — External data and quality
+### Milestone 4 — External data and quality (implemented)
 
 - Integrate one public API behind a server-side data boundary.
 - Cache and handle API failures without breaking resource pages.
@@ -54,10 +62,14 @@ application locally.
 
 ### Milestone 5 — Delivery
 
-- Deploy the application and database.
-- Complete the README user guide and security notes.
-- Run a production smoke test and rehearse the presentation.
-- Complete [PROJECT.md](PROJECT.md) without changing its template structure.
+- Run the CI workflow with local Supabase, pgTAP, and the authenticated browser
+  scenarios.
+- Configure production Supabase, confirmation email delivery, and trusted
+  moderator assignment for the moderation feature.
+- Deploy the application and database changes through Vercel and Supabase.
+- Run a production smoke test, add presentation evidence, and rehearse the
+  presentation.
+- Complete [PROJECT.md](../PROJECT.md) without changing its template structure.
 
 **Exit condition:** the deployed happy path works and every team member can
 explain their area.
@@ -65,8 +77,9 @@ explain their area.
 ## Scope control
 
 Prioritize the vertical slice: browse → search → authenticate → create content →
-verify ownership. Defer visual polish, translations, collections, reporting,
-advanced moderation, and additional integrations until that slice is stable.
+verify ownership. Personal lists and basic suggestion moderation are in scope.
+Defer translations, reporting, advanced moderation workflows, and additional
+integrations until the deployed happy path is stable.
 
 For every new request, record:
 
