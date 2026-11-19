@@ -1,8 +1,14 @@
 import PageHeader from '@/components/PageHeader'
 import { Card, CardContent } from '@/components/ui/card'
+import { createPageMetadata } from '@/lib/metadata'
 
-// SSG: static content, built once
 export const dynamic = 'force-static'
+
+export const metadata = createPageMetadata({
+  title: 'About',
+  description: 'Learn about the OpenFinder open-source alternatives directory.',
+  path: '/about',
+})
 
 export default function Page() {
   return (
