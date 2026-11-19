@@ -74,6 +74,9 @@ authenticated browser tests.
    exact callback URL `https://your-domain.example/auth/callback`. Add local
    callback URLs only to the development project. Configure a production SMTP
    provider so confirmation messages can be delivered reliably.
+   For GitHub OAuth, create a production OAuth app with the callback
+   `https://<project-ref>.supabase.co/auth/v1/callback`, then add its Client
+   ID and secret to the GitHub provider in the hosted Supabase dashboard.
 5. Assign moderators through a trusted Supabase Auth Admin API operation by
    setting `app_metadata.role` to `moderator` for the intended user:
 
