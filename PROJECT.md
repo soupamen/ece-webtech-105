@@ -144,7 +144,7 @@ described.
 
 *What is the technically most difficult or most polished feature you built?*
 
-Yannis De Saint Loubert: [Your answer here]
+Yannis De Saint Loubert: I am proudest of connecting Supabase Auth and RLS to the protected personal-list workflow, because it makes the application genuinely multi-user rather than only a public catalogue.
 
 Lilian Bulteau: The Explore page: you can search for a tool, filter by category and move between pages, and everything is saved in the URL, so a search could be shared.
 
@@ -154,7 +154,7 @@ Arsène Léonard Barton--von Saurma: [Your answer here]
 
 *If you had more time, what would you add or improve in your project?*
 
-Yannis De Saint Loubert: [Your answer here]
+Yannis De Saint Loubert: I would improve email and GitHub authentication in production by completing reliable SMTP delivery, OAuth callback testing, and a clearer password-reset flow.
 
 Lilian Bulteau: I would let users rate and review tools and make lists shareable with a public link.
 
@@ -164,7 +164,7 @@ Arsène Léonard Barton--von Saurma: [Your answer here]
 
 *What did you enjoy about this course? What could be improved for next year?*
 
-Yannis De Saint Loubert: [Your answer here]
+Yannis De Saint Loubert: I enjoyed building a complete full-stack feature with real deployment constraints, and I would add more guided troubleshooting exercises for Supabase, Vercel, and OAuth.
 
 Lilian Bulteau: I liked the MCQs during the online sessions, they kept me engaged unlike other theoretical online lecture. The course was interesting and made me curious.
 
