@@ -1,10 +1,10 @@
-# Project Name: [Insert Name Here]
+# Project Name: OpenFinder
 
 - **Team Members:**
-  - [Name 1]
-  - [Name 2]
-  - [Name 3]
-- **Deployed URL:** [https://your-project.vercel.app]
+  - Yannis De Saint Loubert
+  - Lilian Bulteau
+  - Arsène Léonard Barton--von Saurma
+- **Deployed URL:** https://openfinder-ivory.vercel.app
 
 ---
 
@@ -12,9 +12,11 @@
 
 ### Key Features (UI/UX)
 
-*Provide a few screenshots or a short animated GIF demonstrating some of the key features of your application.*
+![Catalogue](documentation/screenshots/catalogue.png)
+![Authentication](documentation/screenshots/authentication.png)
+![Personal lists](documentation/screenshots/lists.png)
 
-[INSERT SCREENSHOTS/GIFS HERE]
+Save these screenshots in `documentation/screenshots/`.
 
 ---
 
@@ -24,52 +26,52 @@
 
 ### Authentication
 
-- [ ] Sign-up implemented
-- [ ] Sign-in implemented
-- [ ] Sign-out implemented
-- [ ] The UI updates based on user state
+- [x] Sign-up implemented
+- [x] Sign-in implemented
+- [x] Sign-out implemented
+- [x] The UI updates based on user state
 
-**Notes**: [Your notes here (optional)]
+**Notes**: Email/password and GitHub OAuth use Supabase Auth.
 
-**Self-Evaluation:**: [Your self-evaluation here]
+**Self-Evaluation:**: Authentication works locally and in production, including logout and session state.
 
 ### CRUD Operations
 
-- **Main Resource:** [e.g., "Recipes"]
-- [ ] Create
-- [ ] Read
-- [ ] Update
-- [ ] Delete
+- **Main Resource:** Personal lists
+- [x] Create
+- [x] Read
+- [x] Update
+- [x] Delete
 
-**Notes**: [Your notes here (optional)]
+**Notes**: Authenticated users create, rename, describe, and delete their lists.
 
-**Self-Evaluation:**: [Your self-evaluation here]
+**Self-Evaluation:**: CRUD is protected by Supabase RLS.
 
 ### Data Relationships
 
-- **Tables Involved:** [e.g., "Users" and "Posts"]
-- [ ] Relationship implemented
+- **Tables Involved:** `lists`, `list_items`, and `tools`
+- [x] Relationship implemented
 
-**Notes**: [Your notes here (optional)]
-**Self-Evaluation:**: [Your self-evaluation here]
+**Notes**: `list_items` links one list to one tool with a composite primary key.
+**Self-Evaluation:**: The relationship supports ownership and cascade deletion.
 
 ### Search & Filtering
 
-- [ ] Search implemented
-- [ ] Filter implemented, available options: [e.g., "by category", "by date"]
+- [x] Search implemented
+- [x] Filter implemented, available options: category and search text
 
-**Notes**: [Your notes here (optional)]
+**Notes**: `/explore` combines database search, category filtering, and exact-count pagination.
 
-**Self-Evaluation:**: [Your self-evaluation here]
+**Self-Evaluation:**: Search and filters use Supabase and remain shareable through query parameters.
 
 ### External API Integration
 
-- **API Used:** [Name and URL of the API]
-- **Data fetched:** [What data are you getting?]
+- **API Used:** GitHub REST API
+- **Data fetched:** Stars, forks, license, and repository link
 
-**Notes**: [Your notes here (optional)]
+**Notes**: The server fetch is cached and hides the GitHub section on errors.
 
-**Self-Evaluation:**: [Your self-evaluation here]
+**Self-Evaluation:**: External API failures do not prevent the tool page from rendering.
 
 ---
 
@@ -77,33 +79,35 @@
 
 ### Database Schema
 
-*Provide a screenshot of your Supabase Table Editor or a text description of your tables and relationships.*
+Capture Supabase **Table Editor** showing `categories`, `tools`, `lists`, and `list_items`.
+Save it as `documentation/screenshots/supabase-schema.png`.
 
-[INSERT SCHEMA SCREENSHOT HERE]
+![Database schema](documentation/screenshots/supabase-schema.png)
 
-**Notes**: [Your notes here (optional)]
+**Notes**: The schema uses foreign keys, indexes, a composite key, and versioned migrations.
 
-**Self-Evaluation:**: [Your self-evaluation here]
+**Self-Evaluation:**: Public catalogue data and private collections are clearly separated.
 
 ### Row Level Security (RLS)
 
-*Provide a screenshot of the **Supabase Authentication > Policies** dashboard showing your active policies. This is mandatory.*
+Capture **Authentication → Policies** for `lists` and `list_items`.
+Save it as `documentation/screenshots/supabase-policies.png`.
 
-[INSERT RLS DASHBOARD SCREENSHOT HERE]
+![RLS policies](documentation/screenshots/supabase-policies.png)
 
-**Notes**: [Your notes here (optional)]
+**Notes**: Policies compare `auth.uid()` with `lists.user_id` and protect nested list items.
 
-**Self-Evaluation:**: [Your self-evaluation here]
+**Self-Evaluation:**: Anonymous users cannot read or modify private lists.
 
 ### Server vs. Client Components
 
 *Identify one significant Server Component and one Client Component in your app.*
 
-**Server Component:** [File path, e.g., `src/app/dashboard/page.tsx`]
-    - *Why?* [e.g., "Directly fetches data from Supabase to ensure SEO and performance."]
+**Server Component:** `client/app/list/page.js`
+    - Reads the authenticated session and personal lists on each request.
 
-**Client Component:** [File path, e.g., `src/components/LikeButton.tsx`]
-    - *Why?* [e.g., "Needs access to `onClick` handlers and React state."]
+**Client Component:** `client/components/layout/NavLinks.js`
+    - Reads the browser pathname and manages responsive navigation state.
 
 ---
 
@@ -115,28 +119,28 @@
 
 *What is the technically most difficult or most polished feature you built?*
 
-[Name 1]: [Your answer here]
+Yannis: [À compléter individuellement]
 
-[Name 2]: [Your answer here]
+Lilian: [À compléter individuellement]
 
-[Name 3]: [Your answer here]
+Arsène: [À compléter individuellement]
 
 ### What Would You Improve?
 
 *If you had more time, what would you add or improve in your project?*
 
-[Name 1]: [Your answer here]
+Yannis: [À compléter individuellement]
 
-[Name 2]: [Your answer here]
+Lilian: [À compléter individuellement]
 
-[Name 3]: [Your answer here]
+Arsène: [À compléter individuellement]
 
 ### Course Feedback (Bonus)
 
 *What did you enjoy about this course? What could be improved for next year?*
 
-[Name 1]: [Your answer here]
+Yannis: [À compléter individuellement]
 
-[Name 2]: [Your answer here]
+Lilian: [À compléter individuellement]
 
-[Name 3]: [Your answer here]
+Arsène: [À compléter individuellement]
