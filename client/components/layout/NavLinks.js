@@ -2,24 +2,27 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
-import SearchBar from './SearchBar'
 
+// Home is reached through the logo; search lives on Home and Explore.
 const links = [
-  { href: '/', label: 'Home' },
   { href: '/explore', label: 'Explore' },
   { href: '/category', label: 'Categories' },
   { href: '/list', label: 'My lists' },
-  { href: '/contact', label: 'Contact' },
   { href: '/suggest', label: 'Suggest a tool' },
   { href: '/profile', label: 'Profile' },
 ]
 
+const focusRing = 'rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50'
+
 const linkClass = (active) =>
-  active
-    ? 'font-semibold text-foreground underline underline-offset-4'
-    : 'text-muted-foreground transition-colors hover:text-foreground'
+  cn(
+    focusRing,
+    active
+      ? 'font-semibold text-foreground underline underline-offset-4'
+      : 'text-muted-foreground transition-colors hover:text-foreground'
+  )
 
 // children: server-rendered extras (ThemeToggle) placed between the links and the menu button.
 export default function NavLinks({ children }) {
@@ -27,8 +30,7 @@ export default function NavLinks({ children }) {
   const [open, setOpen] = useState(false)
   const buttonRef = useRef(null)
 
-  const isActive = (href) =>
-    href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href + '/')
+  const isActive = (href) => pathname === href || pathname.startsWith(href + '/')
 
   useEffect(() => {
     if (!open) return
@@ -45,21 +47,14 @@ export default function NavLinks({ children }) {
   return (
     <nav aria-label="Main" className="flex items-center gap-4">
       <ul className="hidden items-center gap-6 md:flex">
-        {links.map(({ href, label }, index) => {
+        {links.map(({ href, label }) => {
           const active = isActive(href)
           return (
-            <Fragment key={href}>
-              <li>
-                <Link href={href} aria-current={active ? 'page' : undefined} className={linkClass(active)}>
-                  {label}
-                </Link>
-              </li>
-              {index === 0 && (
-                <li>
-                  <SearchBar />
-                </li>
-              )}
-            </Fragment>
+            <li key={href}>
+              <Link href={href} aria-current={active ? 'page' : undefined} className={linkClass(active)}>
+                {label}
+              </Link>
+            </li>
           )
         })}
       </ul>
@@ -92,8 +87,7 @@ export default function NavLinks({ children }) {
         className="absolute inset-x-0 top-full border-b bg-background shadow-[0_12px_24px_-16px_oklch(0_0_0/0.3)] md:hidden"
       >
         <div className="mx-auto max-w-5xl px-4 pt-3 pb-4">
-          <SearchBar />
-          <ul className="mt-2 flex flex-col">
+          <ul className="flex flex-col">
             {links.map(({ href, label }) => {
               const active = isActive(href)
               return (

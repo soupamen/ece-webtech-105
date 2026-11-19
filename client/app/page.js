@@ -9,7 +9,8 @@ import { createPageMetadata } from '@/lib/metadata'
 export const dynamic = 'force-dynamic'
 
 export const metadata = createPageMetadata({
-  title: 'Open-source alternatives',
+  // The root layout's "%s · OpenFinder" template doesn't apply to its own page.
+  title: { absolute: 'OpenFinder · Open-source alternatives' },
   description: 'Search open-source alternatives to popular proprietary tools.',
   path: '/',
 })

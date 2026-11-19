@@ -4,25 +4,26 @@
   - Yannis De Saint Loubert
   - Lilian Bulteau
   - Arsène Léonard Barton--von Saurma
-- **Deployed URL:** https://openfinder-ivory.vercel.app
+- **Deployed URL:** [https://openfinder-ivory.vercel.app]
 
 ---
 
 ## 1. Concept & User Experience
 
+OpenFinder is a directory of open-source alternatives to popular proprietary
+software. Visitors search or browse by category, open a tool page enriched with
+live GitHub data, and, once signed in, save tools to personal lists or suggest
+new tools for moderators to review.
+
 ### Key Features (UI/UX)
 
-![Catalogue](documentation/screenshots/catalogue.png)
-![Authentication](documentation/screenshots/authentication.png)
-![Personal lists](documentation/screenshots/lists.png)
+**Home page**: search bar, category shortcuts and featured tools.
 
-Save these screenshots in `documentation/screenshots/`.
+![OpenFinder home page](documentation/screenshots/home.png)
 
 ---
 
 ## 2. Full-Stack Functionality
-
-*Briefly describe how you implemented the core requirements. Keep it concise (1-2 sentences per item).*
 
 ### Authentication
 
@@ -31,47 +32,60 @@ Save these screenshots in `documentation/screenshots/`.
 - [x] Sign-out implemented
 - [x] The UI updates based on user state
 
-**Notes**: Email/password and GitHub OAuth use Supabase Auth.
+**Notes**: Supabase email/password auth via Server Actions
+(`client/app/auth/actions.js`). The profile page shows the account or sign-in
+links, and private pages redirect guests to sign-in.
 
-**Self-Evaluation:**: Authentication works locally and in production, including logout and session state.
+**Self-Evaluation:**: Complete flow with validation, clear error messages and
+safe redirects.
 
 ### CRUD Operations
 
-- **Main Resource:** Personal lists
+- **Main Resource:** Personal lists of tools (`lists` and `list_items`)
 - [x] Create
 - [x] Read
 - [x] Update
 - [x] Delete
 
-**Notes**: Authenticated users create, rename, describe, and delete their lists.
+**Notes**: Server Actions in `client/app/list/actions.js` create, rename and
+delete lists, and add or remove tools in them.
 
-**Self-Evaluation:**: CRUD is protected by Supabase RLS.
+**Self-Evaluation:**: Full CRUD with input validation on the server and RLS as
+the final check.
 
 ### Data Relationships
 
-- **Tables Involved:** `lists`, `list_items`, and `tools`
+- **Tables Involved:** `categories` → `tools`, `auth.users` → `lists`,
+  `lists` ↔ `tools` through `list_items`, `auth.users` → `tool_submissions`
 - [x] Relationship implemented
 
-**Notes**: `list_items` links one list to one tool with a composite primary key.
-**Self-Evaluation:**: The relationship supports ownership and cascade deletion.
+**Notes**: `tools` belongs to a category; `list_items` joins lists and tools
+(many-to-many).
+
+**Self-Evaluation:**: One-to-many and many-to-many relationships, both used in
+the UI (category pages, list contents).
 
 ### Search & Filtering
 
 - [x] Search implemented
-- [x] Filter implemented, available options: category and search text
+- [x] Filter implemented, available options: by category
 
-**Notes**: `/explore` combines database search, category filtering, and exact-count pagination.
+**Notes**: `/explore` searches by tool name or replaced software, filters by
+category and paginates; all parameters live in the URL.
 
-**Self-Evaluation:**: Search and filters use Supabase and remain shareable through query parameters.
+**Self-Evaluation:**: Search, filter and pagination combined, rendered on the
+server, with loading, empty and error states.
 
 ### External API Integration
 
-- **API Used:** GitHub REST API
-- **Data fetched:** Stars, forks, license, and repository link
+- **API Used:** GitHub REST API (https://api.github.com/repos/{owner}/{repo})
+- **Data fetched:** Stars, forks, license, last update date and repository link
 
-**Notes**: The server fetch is cached and hides the GitHub section on errors.
+**Notes**: Fetched server-side with a 60-second cache; if GitHub fails, the
+section is hidden and the page still renders.
 
-**Self-Evaluation:**: External API failures do not prevent the tool page from rendering.
+**Self-Evaluation:**: Robust integration: cached, validated and fault tolerant,
+covered by unit tests.
 
 ---
 
@@ -79,35 +93,46 @@ Save these screenshots in `documentation/screenshots/`.
 
 ### Database Schema
 
-Capture Supabase **Table Editor** showing `categories`, `tools`, `lists`, and `list_items`.
-Save it as `documentation/screenshots/supabase-schema.png`.
+*Provide a screenshot of your Supabase Table Editor or a text description of your tables and relationships.*
 
-![Database schema](documentation/screenshots/supabase-schema.png)
+| Table | Main columns | Relationships |
+| --- | --- | --- |
+| `categories` | `id`, `slug`, `name`, `description` | Has many `tools` |
+| `tools` | `id`, `slug`, `name`, `alternative_to`, `description`, `github_repo`, `website_url` | `category_id` → `categories` |
+| `lists` | `id`, `user_id`, `name`, `description` | `user_id` → `auth.users` |
+| `list_items` | `list_id`, `tool_id` | Joins `lists` and `tools` |
+| `tool_submissions` | `id`, `user_id`, `category_id`, `name`, `alternative_to`, `description`, `github_repo`, `website_url`, `status`, `moderator_note` | `user_id` → `auth.users`, `category_id` → `categories` |
+| `contacts` | `id`, `name`, `email`, `message` | None |
 
-**Notes**: The schema uses foreign keys, indexes, a composite key, and versioned migrations.
+**Notes**: The schema is versioned in `supabase/migrations/` and seeded by
+`supabase/seed.sql`.
 
-**Self-Evaluation:**: Public catalogue data and private collections are clearly separated.
+**Self-Evaluation:**: Normalized schema with constraints, versioned migrations
+and reproducible seed data.
 
 ### Row Level Security (RLS)
 
-Capture **Authentication → Policies** for `lists` and `list_items`.
-Save it as `documentation/screenshots/supabase-policies.png`.
+*Provide a screenshot of the **Supabase Authentication > Policies** dashboard showing your active policies. This is mandatory.*
 
-![RLS policies](documentation/screenshots/supabase-policies.png)
+[INSERT RLS DASHBOARD SCREENSHOT HERE]
 
-**Notes**: Policies compare `auth.uid()` with `lists.user_id` and protect nested list items.
+**Notes**: RLS is on for every table: the catalogue is public read-only, and
+users can only access their own lists and suggestions. Policies are tested with
+pgTAP in `supabase/tests/`.
 
-**Self-Evaluation:**: Anonymous users cannot read or modify private lists.
+**Self-Evaluation:**: Policies cover every table and are tested, not only
+described.
 
 ### Server vs. Client Components
 
-*Identify one significant Server Component and one Client Component in your app.*
-
-**Server Component:** `client/app/list/page.js`
-    - Reads the authenticated session and personal lists on each request.
+**Server Component:** `client/app/explore/page.js`
+    - *Why?* Reads the URL parameters and queries Supabase on the server, so the
+      results are in the HTML (SEO, no client fetch) and no database code ships
+      to the browser.
 
 **Client Component:** `client/components/layout/NavLinks.js`
-    - Reads the browser pathname and manages responsive navigation state.
+    - *Why?* Needs `usePathname()` to highlight the active link and React state
+      for the mobile menu (open/close, Escape key).
 
 ---
 
@@ -119,28 +144,28 @@ Save it as `documentation/screenshots/supabase-policies.png`.
 
 *What is the technically most difficult or most polished feature you built?*
 
-Yannis: [À compléter individuellement]
+Yannis De Saint Loubert: [Your answer here]
 
-Lilian: [À compléter individuellement]
+Lilian Bulteau: The Explore page: you can search for a tool, filter by category and move between pages, and everything is saved in the URL, so a search could be shared.
 
-Arsène: [À compléter individuellement]
+Arsène Léonard Barton--von Saurma: [Your answer here]
 
 ### What Would You Improve?
 
 *If you had more time, what would you add or improve in your project?*
 
-Yannis: [À compléter individuellement]
+Yannis De Saint Loubert: [Your answer here]
 
-Lilian: [À compléter individuellement]
+Lilian Bulteau: I would let users rate and review tools and make lists shareable with a public link.
 
-Arsène: [À compléter individuellement]
+Arsène Léonard Barton--von Saurma: [Your answer here]
 
 ### Course Feedback (Bonus)
 
 *What did you enjoy about this course? What could be improved for next year?*
 
-Yannis: [À compléter individuellement]
+Yannis De Saint Loubert: [Your answer here]
 
-Lilian: [À compléter individuellement]
+Lilian Bulteau: I liked the MCQs during the online sessions, they kept me engaged unlike other theoretical online lecture. The course was interesting and made me curious.
 
-Arsène: [À compléter individuellement]
+Arsène Léonard Barton--von Saurma: [Your answer here]

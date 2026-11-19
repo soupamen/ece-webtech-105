@@ -49,6 +49,7 @@ select set_config(
 select set_config('request.jwt.claim.role', 'authenticated', true);
 set local role authenticated;
 
+-- A signed-in user can submit a suggestion (status defaults to pending).
 select lives_ok(
   $$
     insert into public.tool_submissions (
@@ -70,6 +71,7 @@ select lives_ok(
   $$,
   'a signed-in user can submit a pending suggestion'
 );
+-- The submitter can read their own suggestion.
 select is(
   (
     select count(*)
@@ -79,6 +81,7 @@ select is(
   1::bigint,
   'a submitter can read their own suggestion'
 );
+-- Users cannot self-approve by setting status on insert.
 select throws_ok(
   $$
     insert into public.tool_submissions (
@@ -113,6 +116,7 @@ select set_config(
   '{"sub":"44444444-4444-4444-8444-444444444444","role":"authenticated","app_metadata":{}}',
   true
 );
+-- Another regular user cannot see the suggestion.
 select is(
   (
     select count(*)
@@ -122,6 +126,7 @@ select is(
   0::bigint,
   'a regular user cannot read another users suggestion'
 );
+-- Their update runs but matches zero rows under RLS.
 select lives_ok(
   $$
     update public.tool_submissions
@@ -141,6 +146,7 @@ select set_config(
   '{"sub":"33333333-3333-4333-8333-333333333333","role":"authenticated","app_metadata":{}}',
   true
 );
+-- Status is still pending, so that update had no effect.
 select is(
   (
     select status
@@ -161,6 +167,7 @@ select set_config(
   '{"sub":"44444444-4444-4444-8444-444444444444","role":"authenticated","app_metadata":{"role":"moderator"}}',
   true
 );
+-- A moderator (app_metadata role) can read every suggestion.
 select is(
   (
     select count(*)
@@ -170,6 +177,7 @@ select is(
   1::bigint,
   'a moderator can read all suggestions'
 );
+-- A moderator can approve and annotate it.
 select lives_ok(
   $$
     update public.tool_submissions
@@ -190,6 +198,7 @@ select set_config(
   '{"sub":"33333333-3333-4333-8333-333333333333","role":"authenticated","app_metadata":{}}',
   true
 );
+-- The submitter sees the moderation decision.
 select is(
   (
     select status
@@ -199,6 +208,7 @@ select is(
   'approved',
   'a submitter can see the moderation decision'
 );
+-- The submitter's attempt to change the decision is ignored.
 select lives_ok(
   $$
     update public.tool_submissions
@@ -207,6 +217,7 @@ select lives_ok(
   $$,
   'a submitter cannot overwrite a moderation decision'
 );
+-- Status is still approved.
 select is(
   (
     select status

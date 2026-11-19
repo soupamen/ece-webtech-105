@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 
+// The contact form saves to Supabase and shows a confirmation.
 test('a visitor can send a contact message', async ({ page }) => {
   test.skip(!process.env.SUPABASE_E2E_ENABLED, 'requires local Supabase')
 
