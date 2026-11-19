@@ -9,7 +9,7 @@ only client-side component. The schema is versioned in `supabase/migrations/`
 and populated by `supabase/seed.sql`.
 
 The target product is a searchable directory of open-source alternatives.
-Authentication and user-facing collection features remain future work.
+Supabase Auth, protected collections, and public catalogue access are implemented.
 
 ## Runtime shape
 
@@ -22,6 +22,9 @@ flowchart TD
     Pages --> Tailwind[client/app/globals.css]
     Pages --> Data[client/lib/supabase.js]
     Pages --> GitHub[client/lib/github.js]
+    Browser --> AuthUI[client/app/login/page.js]
+    AuthUI --> AuthCallback[client/app/auth/callback/route.js]
+    AuthCallback --> SupabaseAuth[(Supabase Auth)]
     Data --> Supabase[(Supabase)]
     GitHub --> GitHubAPI[GitHub REST API]
 ```
@@ -41,7 +44,7 @@ client/app/
   category/page.js          # Static category index
   category/[slug]/page.js   # Generated category detail
   tool/[slug]/page.js       # Incrementally regenerated tool detail
-  list/page.js              # Dynamic personal-list placeholder
+  list/page.js              # Dynamic authenticated personal lists
   profile/page.js           # Dynamic profile placeholder
   globals.css               # Global Tailwind import
 client/components/
@@ -50,6 +53,9 @@ client/components/
 client/lib/
   supabase.js               # Supabase queries and collection access functions
   github.js                 # Server-side GitHub repository lookup
+  supabase/client.js        # Browser Supabase client
+  supabase/server.js        # Server Supabase client using cookies
+  supabase/update-session.js # Session refresh for proxy.js
 client/public/
   profile.png               # Static public asset
 supabase/
@@ -68,6 +74,12 @@ supabase/
 6. `NavLinks` reads the pathname in the browser and sets `aria-current="page"`.
 
 The complete route decision table is in [RENDERING.md](RENDERING.md).
+
+Authentication uses `@supabase/ssr`. The public catalogue continues to use the
+anon client in `client/lib/supabase.js` without reading cookies. The browser
+client is used for login and auth state; the server client is used only by
+dynamic authenticated routes and the OAuth callback. `proxy.js` refreshes the
+session cookie and does not make the public catalogue dynamic.
 
 ## Component boundaries
 
@@ -112,14 +124,14 @@ The directory data is split into two public tables:
 Both catalogue tables are readable by anonymous and authenticated users. Writes
 are not exposed through their policies.
 
-Collections are prepared for the authentication milestone:
+Collections are available to authenticated users:
 
 - `lists` belongs to one `auth.users` record;
 - `list_items` links a list to a tool with a composite primary key;
 - RLS allows authenticated users to access only their own lists and list items.
 
-The collection access functions are prepared, but authentication and the
-`/list` and `/profile` interfaces remain placeholders.
+`/list` reads and creates lists through the SSR Supabase client. The browser
+form does not send a trusted `userId`; RLS derives the owner with `auth.uid()`.
 
 Public tool pages can enrich Supabase data with GitHub repository metadata.
 The API call is server-side, cached for 60 seconds, and optional: failures do

@@ -14,7 +14,9 @@ requirements change.
 | `/category/[slug]` | `client/app/category/[slug]/page.js` | Static parameters | Known category pages are generated from Supabase data |
 | `/tool/[slug]` | `client/app/tool/[slug]/page.js` | ISR, 60 seconds | Public tool details and optional GitHub data are cacheable |
 | `/explore` | `client/app/explore/page.js` | Dynamic | Results depend on URL search, category, and page parameters |
-| `/list` | `client/app/list/page.js` | Dynamic | Lists will contain user-specific data |
+| `/login` | `client/app/login/page.js` | Static | The login form uses browser state and Supabase Auth |
+| `/auth/callback` | `client/app/auth/callback/route.js` | Dynamic | Exchanges an OAuth code and writes the session |
+| `/list` | `client/app/list/page.js` | Dynamic | Lists contain request-specific authenticated user data |
 | `/profile` | `client/app/profile/page.js` | Dynamic | Profiles will contain user-specific data |
 | `/not-found` | `client/app/not-found.js` | Static | The fallback has no request-time data |
 

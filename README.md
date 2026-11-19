@@ -33,8 +33,7 @@ Implemented in the prototype:
 
 Not implemented yet:
 
-- Supabase authentication
-- User-facing list and profile features
+- Profile interface
 - Contact form and moderation
 - Automated tests and CI
 - Full Vercel deployment verification
@@ -97,6 +96,8 @@ development and in Vercel for each relevant environment:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_AUTH_GITHUB_CLIENT_ID=
+SUPABASE_AUTH_GITHUB_SECRET=
 ```
 
 Use only the public Supabase URL and publishable/anon key. Never commit
@@ -112,7 +113,9 @@ credentials or service-role keys.
 | `/category` | Category index from Supabase | Static |
 | `/category/[slug]` | Category detail from Supabase | Static parameters |
 | `/tool/[slug]` | Tool detail and GitHub information | ISR, 60 seconds |
-| `/list` | Future personal lists surface | Dynamic |
+| `/login` | Email/password and GitHub sign-in | Static |
+| `/auth/callback` | Server-side OAuth code exchange | Dynamic |
+| `/list` | Personal lists for authenticated users | Dynamic |
 | `/profile` | Future personal profile surface | Dynamic |
 | `/not-found` | Fallback for unknown routes | Static |
 
