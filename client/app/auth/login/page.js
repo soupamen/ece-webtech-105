@@ -67,7 +67,7 @@ export default async function LoginPage({ searchParams }) {
           <p className="mt-4 text-sm text-muted-foreground">
             New to OpenFinder?{' '}
             <Link
-              className="underline hover:no-underline"
+              className="underline hover:no-underline rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
               href={`/auth/signup?next=${encodeURIComponent(next)}`}
             >
               Create an account

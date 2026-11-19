@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import PageHeader from '@/components/PageHeader'
+import SuggestToolForm from '@/components/SuggestToolForm'
 import { createPageMetadata } from '@/lib/metadata'
 import {
   getModerationMessage,
@@ -57,98 +57,12 @@ export default async function SuggestToolPage({ searchParams }) {
           <CardTitle>Tool details</CardTitle>
         </CardHeader>
         <CardContent>
-          <form action={submitToolSuggestionAction} className="grid gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="tool-name">
-                Tool name
-              </label>
-              <input
-                id="tool-name"
-                name="name"
-                maxLength={80}
-                required
-                className="h-10 w-full rounded-md border border-input bg-transparent px-3 text-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="alternative-to">
-                Alternative to
-              </label>
-              <input
-                id="alternative-to"
-                name="alternative_to"
-                maxLength={100}
-                required
-                className="h-10 w-full rounded-md border border-input bg-transparent px-3 text-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="tool-category">
-                Category
-              </label>
-              <select
-                id="tool-category"
-                name="category_id"
-                defaultValue=""
-                required
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-              >
-                <option value="" disabled>
-                  Choose a category
-                </option>
-                {categories?.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="tool-description">
-                Description
-              </label>
-              <textarea
-                id="tool-description"
-                name="description"
-                maxLength={500}
-                required
-                rows={4}
-                className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="github-repo">
-                GitHub repository
-              </label>
-              <input
-                id="github-repo"
-                name="github_repo"
-                maxLength={100}
-                placeholder="owner/repository"
-                className="h-10 w-full rounded-md border border-input bg-transparent px-3 text-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="website-url">
-                Official website
-              </label>
-              <input
-                id="website-url"
-                name="website_url"
-                type="url"
-                maxLength={2048}
-                placeholder="https://example.com"
-                className="h-10 w-full rounded-md border border-input bg-transparent px-3 text-sm"
-              />
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Suggestions are private until reviewed. Submitting a suggestion
-              does not automatically add it to the public catalogue.
-            </p>
-            <div>
-              <Button type="submit">Send suggestion</Button>
-            </div>
-          </form>
+          {/* Remounts (and clears) after each new suggestion appears in the list. */}
+          <SuggestToolForm
+            key={submissions[0]?.id ?? 'empty'}
+            categories={categories}
+            action={submitToolSuggestionAction}
+          />
         </CardContent>
       </Card>
 

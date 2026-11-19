@@ -7,9 +7,16 @@ import EmptyState from '@/components/EmptyState'
 import { exploreHref } from '@/components/Pagination'
 import { Button } from '@/components/ui/button'
 import { createPageMetadata } from '@/lib/metadata'
-import { getCategory, getToolsByCategory } from '@/lib/supabase'
+import { getCategories, getCategory, getToolsByCategory } from '@/lib/supabase'
 
-export const dynamic = 'force-dynamic'
+// ISR: regenerated in the background at most once per hour.
+export const revalidate = 3600
+
+// SSG: one page per category at build time; new slugs render on first request.
+export async function generateStaticParams() {
+  const categories = await getCategories()
+  return categories.map(({ slug }) => ({ slug }))
+}
 
 // Shared by generateMetadata and Page within one request.
 const loadCategory = cache(getCategory)

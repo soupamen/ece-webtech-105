@@ -11,9 +11,8 @@ which must not be edited as part of documentation maintenance.
 - Row Level Security (RLS): a user must not edit another user's data.
 - Tailwind CSS for styling.
 
-These are assignment requirements, not a description of what the current
-prototype already provides. Track implementation status in
-[PROJECT_PLAN.md](PROJECT_PLAN.md).
+These are assignment requirements. Implementation status is tracked in
+[PROJECT.md](../PROJECT.md).
 
 ## Minimum product requirements
 
