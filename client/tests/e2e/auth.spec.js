@@ -35,7 +35,9 @@ test('a guest is sent to sign in before suggesting a tool', async ({ page }) => 
 test('auth forms reject external return paths', async ({ page }) => {
   await page.goto('/auth/login?next=https%3A%2F%2Fexample.com')
 
-  await expect(page.locator('input[name="next"]')).toHaveValue('/profile')
+  await expect(page.locator('form').first().locator('input[name="next"]')).toHaveValue(
+    '/profile'
+  )
 })
 
 // Full CRUD journey: sign up, create/edit a list, add/remove a tool, delete, sign out.
