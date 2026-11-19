@@ -6,9 +6,9 @@ OpenFinder uses Supabase Auth for email/password and GitHub OAuth.
 
 | Item | Local | Production |
 | --- | --- | --- |
-| Next.js | `http://localhost:3000` | Vercel domain |
-| Supabase | `http://127.0.0.1:54321` | Hosted Supabase project |
-| Supabase callback | `http://127.0.0.1:54321/auth/v1/callback` | `https://<project-ref>.supabase.co/auth/v1/callback` |
+| Next.js | `http://localhost:3000` | `https://openfinder-ivory.vercel.app` |
+| Supabase | `http://127.0.0.1:54321` | Hosted project `qedzcmnnbauavbyecqmp` |
+| Supabase callback | `http://127.0.0.1:54321/auth/v1/callback` | `https://qedzcmnnbauavbyecqmp.supabase.co/auth/v1/callback` |
 | Email testing | Mailpit: `http://127.0.0.1:54324` | Configured transactional SMTP |
 | GitHub OAuth | Local OAuth app | Production OAuth app |
 | Session storage | Supabase SSR cookies | Supabase SSR cookies |
@@ -70,22 +70,12 @@ The `lists` table is protected by RLS:
 The browser form uses the authenticated user's session; it does not send a
 trusted `userId`. Database RLS remains the final authorization boundary.
 
-## Production checklist
+## Production status
 
-The following actions require manual configuration:
-
-1. Add a second GitHub OAuth app for the hosted environment.
-2. Configure the GitHub callback:
-   `https://<project-ref>.supabase.co/auth/v1/callback`.
-3. Enable GitHub in the hosted Supabase Auth dashboard.
-4. Set the hosted Supabase Site URL to the Vercel domain.
-5. Add preview URLs to the authorized redirect URLs, including a wildcard when
-   Vercel preview domains are used.
-6. Add the public Supabase URL and publishable key to Vercel.
-7. Add GitHub OAuth secrets to Vercel only if the server/provider configuration
-   requires them there.
-8. Push migrations only after explicit approval:
-   `npm exec supabase -- db push --remote`.
+- GitHub OAuth has been configured in Supabase and Vercel.
+- The OAuth callback is not yet verified as fully successful.
+- SMTP confirmation is not yet verified as fully successful.
+- Supabase hosted secrets must stay out of Git and Vercel client variables.
 
 ## OAuth actors
 
