@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import AuthMessage from '@/components/auth/AuthMessage'
-import { signInAction } from '@/app/auth/actions'
+import { signInAction, signInWithGitHubAction } from '@/app/auth/actions'
 import { getSafeReturnPath } from '@/lib/auth'
 import { createPageMetadata } from '@/lib/metadata'
 
@@ -56,6 +56,12 @@ export default async function LoginPage({ searchParams }) {
             </div>
             <Button type="submit" className="w-full">
               Sign in
+            </Button>
+          </form>
+          <form action={signInWithGitHubAction} className="mt-4">
+            <input type="hidden" name="next" value={next} />
+            <Button type="submit" variant="outline" className="w-full">
+              Continue with GitHub
             </Button>
           </form>
           <p className="mt-4 text-sm text-muted-foreground">

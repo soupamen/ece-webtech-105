@@ -39,6 +39,31 @@ export async function signInAction(formData) {
   redirect(next)
 }
 
+export async function signInWithGitHubAction(formData) {
+  const next = getNextPath(formData)
+  const supabase = await createSupabaseServerClient()
+  const callbackUrl = new URL('/auth/callback', getSiteUrl())
+  callbackUrl.searchParams.set('next', next)
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'github',
+    options: {
+      redirectTo: callbackUrl.toString(),
+    },
+  })
+
+  if (error) {
+    console.error('Supabase GitHub sign in failed', error)
+    redirect(`/auth/login?error=github&next=${encodeURIComponent(next)}`)
+  }
+
+  if (data.url) {
+    redirect(data.url)
+  }
+
+  redirect(`/auth/login?error=github&next=${encodeURIComponent(next)}`)
+}
+
 export async function signUpAction(formData) {
   const next = getNextPath(formData)
   const email = getFormValue(formData, 'email').toLowerCase()
